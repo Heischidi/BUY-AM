@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useWishlist } from '@/hooks/useWishlist';
-import { ordersApi, addressesApi, productsApi } from '@/lib/api';
+import { ordersApi, addressesApi, productsApi, authApi } from '@/lib/api';
 import { Order, Address, Product } from '@/types';
 import { money } from '@/hooks/useCart';
 import ProductCard from '@/components/product/ProductCard';
 
 export default function Account() {
-  const { user, token, loading, logout, updateMe } = useAuth();
+  const { user, token, loading, logout } = useAuth();
   const { wishlistIds } = useWishlist();
   const router = useRouter();
 
