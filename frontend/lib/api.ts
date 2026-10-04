@@ -1,7 +1,8 @@
 // API Client for Buy Am
 // All calls go through this client — no hardcoded URLs elsewhere
+// API calls use a relative path; Next.js rewrites proxy /api/* → FastAPI backend.
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = '';
 
 type RequestOptions = {
   method?: string;
