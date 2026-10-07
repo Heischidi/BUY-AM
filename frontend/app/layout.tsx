@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
@@ -29,6 +30,12 @@ export default function RootLayout({
             <ChatAssistant />
           </CartProvider>
         </AuthProvider>
+
+        <Script
+          src="https://chidi-ai-core.vercel.app/widget.js"
+          data-widget-id="default-workspace-id"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
