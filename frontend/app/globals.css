@@ -1263,8 +1263,8 @@ footer a {
 /* Small phone (max 420px) */
 @media (max-width: 420px) {
   .category-grid { grid-template-columns: repeat(2, 1fr); }
-  .product-grid { grid-template-columns: 1fr; }
-  .product-image { height: 200px; }
+  /* Inherits product-grid 2 columns from 650px */
+  .product-image { height: 120px; }
   h1 { font-size: 48px; }
   .hero-buttons { flex-direction: column; }
   .secondary-button { width: 100%; text-align: center; }
