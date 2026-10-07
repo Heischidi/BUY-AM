@@ -342,6 +342,18 @@ h1 span {
   color: white;
 }
 
+/* ── Hero Art / Market Card Animations ──────────────────────── */
+@keyframes heroArtFloat {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatMarketCard {
+  0% { transform: rotate(3deg) translateY(0px); }
+  50% { transform: rotate(1deg) translateY(-10px); }
+  100% { transform: rotate(3deg) translateY(0px); }
+}
+
 /* ── Hero Art / Market Card ──────────────────────────────────── */
 .hero-art {
   position: relative;
@@ -368,6 +380,7 @@ h1 span {
     );
   box-shadow: 18px 20px 0 var(--yellow), var(--shadow);
   transform: rotate(3deg);
+  animation: floatMarketCard 6s ease-in-out infinite;
 }
 
 .market-card::before,
