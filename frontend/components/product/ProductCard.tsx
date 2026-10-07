@@ -83,7 +83,7 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
               onPriceClick?.(product);
             }}
           >
-            Price
+            You fit price am
           </button>
         </div>
         <button ref={addBtnRef} className="add-button" onClick={handleAddToCart}>
