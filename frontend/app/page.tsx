@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { Product, Category } from '@/types';
@@ -8,6 +8,12 @@ import ProductCard from '@/components/product/ProductCard';
 import CategoryGrid from '@/components/product/CategoryGrid';
 import ProcurementModal from '@/components/ui/ProcurementModal';
 import Link from 'next/link';
+import {
+  animateHeroEntrance,
+  animateStaggerReveal,
+  registerScrollReveal,
+  unregisterScrollReveal,
+} from '@/lib/anime';
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -21,8 +27,16 @@ function HomeContent() {
   const [heroSearch, setHeroSearch] = useState('');
   const [showProcurement, setShowProcurement] = useState(false);
 
+  // Hero elements
+  const heroRef = useRef<HTMLDivElement>(null);
+  const heroAnimated = useRef(false);
+
+  // Scroll-reveal targets
+  const categoriesSectionRef = useRef<HTMLElement>(null);
+  const trustStripRef = useRef<HTMLDivElement>(null);
+  const productsSectionRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
-    // We expect the backend list endpoint to return a list directly for categories
     categoriesApi.list().then(res => setCategories(res as Category[])).catch(console.error);
   }, []);
 
@@ -47,6 +61,46 @@ function HomeContent() {
     fetchProducts();
   }, [q, activeCategory]);
 
+  // Hero entrance animation (only once)
+  useEffect(() => {
+    if (heroAnimated.current || !heroRef.current) return;
+    const children = Array.from(heroRef.current.children) as Element[];
+    animateHeroEntrance(children);
+    heroAnimated.current = true;
+  }, []);
+
+  // Stagger product cards when they load
+  useEffect(() => {
+    if (!loading && products.length > 0) {
+      // Small delay to let React render first
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.product-grid .product-card');
+        if (cards.length) animateStaggerReveal(Array.from(cards), { stagger: 55 });
+      }, 60);
+    }
+  }, [loading, products]);
+
+  // Scroll-reveal: categories section
+  useEffect(() => {
+    const el = categoriesSectionRef.current;
+    if (el) { registerScrollReveal(el, 0); }
+    return () => { if (el) unregisterScrollReveal(el); };
+  }, []);
+
+  // Scroll-reveal: trust strip
+  useEffect(() => {
+    const el = trustStripRef.current;
+    if (el) { registerScrollReveal(el, 80); }
+    return () => { if (el) unregisterScrollReveal(el); };
+  }, []);
+
+  // Scroll-reveal: products section
+  useEffect(() => {
+    const el = productsSectionRef.current;
+    if (el) { registerScrollReveal(el, 0); }
+    return () => { if (el) unregisterScrollReveal(el); };
+  }, []);
+
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (heroSearch.trim()) {
@@ -56,7 +110,7 @@ function HomeContent() {
 
   const handleCategorySelect = (slug: string) => {
     if (q) {
-      router.push('/'); // Clear search query when selecting a category
+      router.push('/');
     }
     setActiveCategory(slug);
   };
@@ -65,16 +119,17 @@ function HomeContent() {
     <>
       <section className="hero">
         <div className="container hero-grid">
-          <div>
-            <span className="eyebrow">Nigeria&apos;s Marketplace</span>
-            <h1>
+          {/* Hero text col — all children stagger in */}
+          <div ref={heroRef}>
+            <span className="eyebrow" style={{ opacity: 0 }}>Nigeria&apos;s Marketplace</span>
+            <h1 style={{ opacity: 0 }}>
               Buy it at <span>Buy Am.</span>
             </h1>
-            <p className="hero-copy">
+            <p className="hero-copy" style={{ opacity: 0 }}>
               From fresh groceries to electronics, building materials to bulk procurement — find everything you need from trusted Nigerian sellers. Delivered to your door.
             </p>
 
-            <form className="hero-search" onSubmit={handleHeroSearch}>
+            <form className="hero-search" onSubmit={handleHeroSearch} style={{ opacity: 0 }}>
               <span style={{ marginLeft: 6, fontSize: 22 }} aria-hidden="true">⌕</span>
               <input
                 type="text"
@@ -85,10 +140,10 @@ function HomeContent() {
               <button className="search-button" type="submit">Search market</button>
             </form>
 
-            <div className="hero-buttons">
+            <div className="hero-buttons" style={{ opacity: 0 }}>
               <button
                 className="secondary-button"
-                onClick={() => document.getElementById('products')?.scrollIntoView()}
+                onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Browse categories ↓
               </button>
@@ -102,7 +157,7 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="hero-art">
+          <div className="hero-art" style={{ opacity: 0, animation: 'heroArtFloat 0.8s 0.6s ease forwards' }}>
             <div className="market-card">
               <div className="market-copy">
                 <small>Trusted Sellers</small>
@@ -114,7 +169,12 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="categories" className="section" style={{ background: 'var(--white)' }}>
+      <section
+        id="categories"
+        className="section reveal-section"
+        style={{ background: 'var(--white)' }}
+        ref={categoriesSectionRef}
+      >
         <div className="container">
           <div className="section-heading">
             <div>
@@ -129,7 +189,7 @@ function HomeContent() {
             onSelect={handleCategorySelect}
           />
 
-          <div className="trust-strip">
+          <div className="trust-strip reveal-section" ref={trustStripRef}>
             <div className="trust-card">
               <div className="trust-icon">🛡️</div>
               <div>
@@ -162,7 +222,11 @@ function HomeContent() {
         </div>
       </section>
 
-      <section id="products" className="section">
+      <section
+        id="products"
+        className="section reveal-section"
+        ref={productsSectionRef}
+      >
         <div className="container">
           <div className="products-toolbar">
             <h2 style={{ fontSize: 32, margin: 0 }}>

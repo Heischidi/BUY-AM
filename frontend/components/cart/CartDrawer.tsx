@@ -1,14 +1,43 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useRef } from 'react';
 import { useCart, money } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { animateDrawerOpen, animateCartBadge } from '@/lib/anime';
 
 export default function CartDrawer() {
-  const { cart, isOpen, closeCart, updateItem, removeItem, itemCount, guestCart, removeFromGuestCart, changeGuestQty } = useCart();
+  const {
+    cart, isOpen, closeCart, updateItem, removeItem,
+    guestCart, removeFromGuestCart, changeGuestQty,
+  } = useCart();
   const { token } = useAuth();
   const router = useRouter();
+
+  const drawerRef = useRef<HTMLElement>(null);
+  const prevCountRef = useRef(0);
+
+  // Animate open via Anime.js; close is still CSS transition (keeps backdrop smooth)
+  useEffect(() => {
+    if (isOpen && drawerRef.current) {
+      animateDrawerOpen(drawerRef.current);
+    }
+  }, [isOpen]);
+
+  // Bounce cart badge when item count increases
+  const itemCount =
+    token
+      ? (cart?.items?.reduce((s, i) => s + i.quantity, 0) ?? 0)
+      : guestCart.reduce((s, i) => s + i.quantity, 0);
+
+  useEffect(() => {
+    if (itemCount > prevCountRef.current) {
+      const badge = document.querySelector('.cart-icon-badge');
+      if (badge) animateCartBadge(badge);
+    }
+    prevCountRef.current = itemCount;
+  }, [itemCount]);
 
   const handleCheckout = () => {
     closeCart();
@@ -19,7 +48,6 @@ export default function CartDrawer() {
     }
   };
 
-  // Render backend cart for authenticated users
   const renderAuthCart = () => {
     if (!cart?.items.length) {
       return (
@@ -52,7 +80,6 @@ export default function CartDrawer() {
     });
   };
 
-  // Render localStorage guest cart
   const renderGuestCart = () => {
     if (!guestCart.length) {
       return (
@@ -93,7 +120,11 @@ export default function CartDrawer() {
   return (
     <>
       <div className={`cart-backdrop ${isOpen ? 'open' : ''}`} onClick={closeCart} />
-      <aside className={`cart-drawer ${isOpen ? 'open' : ''}`} aria-label="Shopping cart">
+      <aside
+        ref={drawerRef}
+        className={`cart-drawer ${isOpen ? 'open' : ''}`}
+        aria-label="Shopping cart"
+      >
         <div className="drawer-header">
           <h2>Your cart</h2>
           <button className="close-button" onClick={closeCart} aria-label="Close cart">×</button>

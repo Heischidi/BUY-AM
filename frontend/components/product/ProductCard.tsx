@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRef } from 'react';
 import { Product } from '@/types';
 import { useCart, money } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { cardHoverIn, cardHoverOut, animateAddToCart, animateButtonPress } from '@/lib/anime';
 
 interface ProductCardProps {
   product: Product;
@@ -17,10 +19,15 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
   const { addItem, addToGuestCart } = useCart();
   const { isSaved, toggle } = useWishlist();
 
+  const cardRef = useRef<HTMLElement>(null);
+  const addBtnRef = useRef<HTMLButtonElement>(null);
+  const priceBtnRef = useRef<HTMLButtonElement>(null);
+
   const image = product.images?.[0]?.url;
   const saved = isSaved(product.id);
 
   const handleAddToCart = async () => {
+    if (addBtnRef.current) animateAddToCart(addBtnRef.current);
     if (token) {
       await addItem(product.id);
     } else {
@@ -29,7 +36,12 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
   };
 
   return (
-    <article className="product-card">
+    <article
+      className="product-card"
+      ref={cardRef}
+      onMouseEnter={() => cardRef.current && cardHoverIn(cardRef.current)}
+      onMouseLeave={() => cardRef.current && cardHoverOut(cardRef.current)}
+    >
       <div className="product-image">
         {image ? (
           <Image
@@ -64,13 +76,17 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
         <div className="product-bottom">
           <span className="price">{money(Number(product.price))}</span>
           <button
+            ref={priceBtnRef}
             className="price-button"
-            onClick={() => onPriceClick?.(product)}
+            onClick={() => {
+              if (priceBtnRef.current) animateButtonPress(priceBtnRef.current);
+              onPriceClick?.(product);
+            }}
           >
             Price
           </button>
         </div>
-        <button className="add-button" onClick={handleAddToCart}>
+        <button ref={addBtnRef} className="add-button" onClick={handleAddToCart}>
           Add to cart
         </button>
       </div>

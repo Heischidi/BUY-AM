@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { procurementApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { animateModalIn, animateModalOut } from '@/lib/anime';
 
 interface ProcurementModalProps {
   onClose: () => void;
@@ -10,6 +11,9 @@ interface ProcurementModalProps {
 
 export default function ProcurementModal({ onClose }: ProcurementModalProps) {
   const { token } = useAuth();
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
   const [form, setForm] = useState({
     item_description: '',
     quantity: 1,
@@ -21,6 +25,21 @@ export default function ProcurementModal({ onClose }: ProcurementModalProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Animate in on mount
+  useEffect(() => {
+    if (backdropRef.current && modalRef.current) {
+      animateModalIn(backdropRef.current, modalRef.current);
+    }
+  }, []);
+
+  const handleClose = () => {
+    if (backdropRef.current && modalRef.current) {
+      animateModalOut(backdropRef.current, modalRef.current, onClose);
+    } else {
+      onClose();
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,8 +63,13 @@ export default function ProcurementModal({ onClose }: ProcurementModalProps) {
   };
 
   return (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
+    <div
+      ref={backdropRef}
+      className="modal-backdrop"
+      style={{ opacity: 0 }}
+      onClick={e => e.target === e.currentTarget && handleClose()}
+    >
+      <div ref={modalRef} className="modal" style={{ opacity: 0 }}>
         {success ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
@@ -53,7 +77,7 @@ export default function ProcurementModal({ onClose }: ProcurementModalProps) {
             <p style={{ color: 'var(--muted)', marginBottom: 24 }}>
               We&apos;ll review your procurement request and get back to you soon.
             </p>
-            <button className="primary-button" onClick={onClose}>Close</button>
+            <button className="primary-button" onClick={handleClose}>Close</button>
           </div>
         ) : (
           <>
@@ -136,7 +160,7 @@ export default function ProcurementModal({ onClose }: ProcurementModalProps) {
                 <button type="submit" className="primary-button" disabled={loading} style={{ flex: 1 }}>
                   {loading ? <span className="spinner" /> : 'Submit request'}
                 </button>
-                <button type="button" onClick={onClose} className="secondary-button">
+                <button type="button" onClick={handleClose} className="secondary-button">
                   Cancel
                 </button>
               </div>

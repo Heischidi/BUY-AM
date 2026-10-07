@@ -1104,47 +1104,170 @@ footer a {
   to { transform: rotate(360deg); }
 }
 
+/* ── Anime.js Animation Helpers ─────────────────────────────── */
+
+/* Scroll-reveal initial hidden state (Anime.js reveals on intersection) */
+.reveal-section {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+/* Product cards need GPU compositing for smooth anime.js transforms */
+.product-card {
+  will-change: transform;
+}
+
+/* Hero art float-in via CSS keyframe (text children handled by Anime.js) */
+@keyframes heroArtFloat {
+  from { opacity: 0; transform: translateY(24px) rotate(3deg); }
+  to   { opacity: 1; transform: translateY(0)   rotate(3deg); }
+}
+
+/* ── Prefers-Reduced-Motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* Ensure hidden elements become visible immediately */
+  .reveal-section,
+  [style*="opacity: 0"],
+  [style*="opacity:0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero-art {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (min-width: 900px) {
   .seller-link { display: block; }
 }
 
+/* Tablet (max 900px) */
 @media (max-width: 900px) {
-  .hero-grid { grid-template-columns: 1fr; }
-  .hero-art { min-height: 320px; }
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .hero-art {
+    min-height: 280px;
+    display: flex;
+    justify-content: center;
+  }
+  .market-card { width: min(100%, 360px); }
   .category-grid { grid-template-columns: repeat(4, 1fr); }
   .product-grid { grid-template-columns: repeat(3, 1fr); }
   .trust-strip { grid-template-columns: repeat(2, 1fr); }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero { padding: 48px 0 40px; }
+  h1 { font-size: clamp(52px, 10vw, 90px); }
 }
 
+/* Large phone (max 650px) */
 @media (max-width: 650px) {
   .container { width: min(100% - 22px, 1180px); }
-  .nav { flex-wrap: wrap; gap: 13px; padding: 12px 0; }
-  .nav-search { order: 3; flex-basis: 100%; }
-  .hero { padding-top: 48px; }
-  h1 { font-size: 72px; }
-  .hero-search { border-radius: 22px; }
-  .hero-search .search-button { padding: 12px 15px; }
-  .category-grid { grid-template-columns: repeat(3, 1fr); }
-  .category-tile { min-height: 108px; padding: 12px; }
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .nav {
+    flex-wrap: wrap;
+    gap: 13px;
+    padding: 12px 0;
+    min-height: unset;
+  }
+  .nav-search {
+    order: 3;
+    flex-basis: 100%;
+    min-width: 0;
+  }
+  .hero { padding-top: 36px; }
+  h1 { font-size: clamp(48px, 14vw, 72px); }
+  .hero-copy { font-size: 16px; }
+  .hero-search {
+    border-radius: 22px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+  .hero-search input { min-width: 0; }
+  .hero-search .search-button { width: 100%; padding: 12px 15px; }
+  .hero-buttons { gap: 10px; }
+  .secondary-button { padding: 10px 16px; font-size: 14px; }
+
+  /* Hero art */
+  .hero-art { min-height: 220px; }
+  .market-card {
+    width: min(100%, 300px);
+    min-height: 240px;
+    padding: 20px;
+    border-radius: 32px;
+  }
+  .market-copy strong { font-size: 44px; }
+  .basket { width: 120px; height: 90px; right: 24px; bottom: 24px; }
+
+  /* Categories */
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .category-tile {
+    min-height: 100px;
+    padding: 12px;
+  }
+  .category-icon { font-size: 24px; }
+  .category-name { font-size: 12px; }
+
+  /* Products */
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
   .product-image { height: 150px; }
   .product-info { padding: 12px; }
-  .product-name { font-size: 18px; }
+  .product-name { font-size: 17px; min-height: unset; }
   .product-bottom { display: block; }
-  .price-button { width: 100%; margin-top: 8px; }
+  .price-button { width: 100%; margin-top: 8px; text-align: center; }
+
+  /* Trust */
   .trust-strip { grid-template-columns: 1fr; }
   .section-heading { display: block; }
   .section-heading p { margin-top: 12px; }
+
+  /* Footer */
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid > div:first-child { grid-column: 1 / -1; }
+
+  /* Chat */
   .chat-toggle { right: 16px; bottom: 16px; }
   .chat-panel { right: 16px; bottom: 98px; }
+
+  /* Cart drawer */
+  .cart-drawer { width: 100%; }
+
+  /* Modal */
+  .modal { padding: 24px 18px; }
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Toolbar */
+  .products-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .products-toolbar h2 { font-size: 24px !important; }
 }
 
+/* Small phone (max 420px) */
 @media (max-width: 420px) {
   .category-grid { grid-template-columns: repeat(2, 1fr); }
   .product-grid { grid-template-columns: 1fr; }
-  .product-image { height: 210px; }
+  .product-image { height: 200px; }
+  h1 { font-size: 48px; }
+  .hero-buttons { flex-direction: column; }
+  .secondary-button { width: 100%; text-align: center; }
+  .nav-actions { gap: 6px; }
+  .icon-button { width: 38px; height: 38px; font-size: 17px; }
 }

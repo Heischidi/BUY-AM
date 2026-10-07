@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Logo from './Logo';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { animateStaggerReveal } from '@/lib/anime';
 
 export default function Navbar() {
   const [query, setQuery] = useState('');
@@ -14,6 +15,17 @@ export default function Navbar() {
   const { itemCount, openCart } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { user, logout } = useAuth();
+
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  // Staggered reveal of nav action items on first mount
+  useEffect(() => {
+    if (hasAnimated.current || !actionsRef.current) return;
+    const items = Array.from(actionsRef.current.children) as Element[];
+    animateStaggerReveal(items, { delay: 300, stagger: 60, fromY: -12 });
+    hasAnimated.current = true;
+  }, []);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -42,7 +54,7 @@ export default function Navbar() {
 
         <Link className="seller-link" href="/seller">Sell on Buy Am</Link>
 
-        <div className="nav-actions">
+        <div className="nav-actions" ref={actionsRef}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Link
@@ -99,7 +111,7 @@ export default function Navbar() {
 
           <button className="icon-button" onClick={openCart} aria-label="Shopping cart">
             🛒
-            <span className="count">{itemCount}</span>
+            <span className="count cart-icon-badge">{itemCount}</span>
           </button>
         </div>
       </div>
