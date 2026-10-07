@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useCart, money } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { animateDrawerOpen, animateCartBadge } from '@/lib/anime';
+import { animateDrawerOpen, animateDrawerClose, animateCartBadge } from '@/lib/anime';
 
 export default function CartDrawer() {
   const {
@@ -18,10 +18,14 @@ export default function CartDrawer() {
   const drawerRef = useRef<HTMLElement>(null);
   const prevCountRef = useRef(0);
 
-  // Animate open via Anime.js; close is still CSS transition (keeps backdrop smooth)
+  // Animate open/close via Anime.js to manage inline transform styles
   useEffect(() => {
-    if (isOpen && drawerRef.current) {
-      animateDrawerOpen(drawerRef.current);
+    if (drawerRef.current) {
+      if (isOpen) {
+        animateDrawerOpen(drawerRef.current);
+      } else {
+        animateDrawerClose(drawerRef.current);
+      }
     }
   }, [isOpen]);
 
