@@ -14,7 +14,7 @@ const SUGGESTIONS = [
 
 const INITIAL_MESSAGE: ChatMessage = {
   role: 'bot',
-  content: "Hi! I'm Amara. What are you looking for today?",
+  content: "Hi! I'm Mama Nkechi. What are you looking for today?",
 };
 
 export default function ChatAssistant() {
@@ -82,7 +82,7 @@ export default function ChatAssistant() {
         aria-label="Buy Am chat assistant"
       >
         <div className="chat-header">
-          <strong>Ask Amara</strong>
+          <strong>Ask Mama Nkechi</strong>
           <span>Your friendly Buy Am shopping assistant</span>
         </div>
 
@@ -97,7 +97,7 @@ export default function ChatAssistant() {
           ))}
           {loading && (
             <div className="message bot" style={{ color: 'var(--muted)', fontStyle: 'italic' }}>
-              Amara is thinking…
+              Mama Nkechi is thinking…
             </div>
           )}
         </div>
@@ -118,7 +118,7 @@ export default function ChatAssistant() {
           <input
             id="chatInput"
             type="text"
-            placeholder="Ask Amara anything..."
+            placeholder="Ask Mama Nkechi anything..."
             autoComplete="off"
             value={input}
             onChange={e => setInput(e.target.value)}

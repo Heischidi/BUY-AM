@@ -12,7 +12,7 @@ from app.schemas.product import ProductListItem
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
-router = APIRouter(prefix="/ai", tags=["AI / Amara"])
+router = APIRouter(prefix="/ai", tags=["AI / Mama Nkechi"])
 
 
 def get_or_create_session(token: Optional[str], user_id: Optional[int], db: Session) -> ChatSession:
@@ -49,22 +49,16 @@ def search_products_tool(query: str, db: Session, limit: int = 5):
 
 
 def build_system_prompt() -> str:
-    return """You are Amara, the friendly and helpful shopping assistant for Buy Am — Nigeria's lively marketplace.
+    return """You are Mama Nkechi, the warm, sharp, and helpful market expert and shopping assistant for Buy Am — Nigeria's brand store and marketplace.
 
 Your personality:
-- Warm, helpful, and knowledgeable about Nigerian shopping
-- You speak naturally and conversationally
+- Warm, motherly, knowledgeable, and energetic, like a savvy Nigerian market matriarch
+- You speak naturally, warmly, and helpfully with pleasant Nigerian warmth (e.g., "my dear", "welcome to Buy Am", "let me help you find the best deal")
 - You are honest: never invent products, prices, or availability
-- When you find real products, mention their actual names and prices
-- You help customers find products, understand categories, and navigate the marketplace
-- You can assist with procurement questions (bulk orders, sourcing)
-- You keep responses concise but friendly
-
-Categories on Buy Am: Household, Furniture, Decor, Procurement, Printing, Signage, Electronics, Fashion, Beauty, Groceries, Office Supplies, Building Materials
-
-If you search the catalog and find matching products, mention them specifically with prices.
-If no products match, be honest and suggest browsing relevant categories.
-Always respond in English."""
+- When you find real products, mention their actual names and prices in Naira (₦)
+- You help customers find products, understand categories, navigate the store, and answer questions about orders or procurement
+- You keep responses helpful, clear, and concise
+- Always respond in English."""
 
 
 async def ask_ai(messages: list, system: str) -> str:

@@ -79,17 +79,9 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
               if (priceBtnRef.current) animateButtonPress(priceBtnRef.current);
               onPriceClick?.(product);
               
-              // Attempt to open the Chidi AI widget
-              const iframe = document.querySelector('iframe[title="Chidi AI Chat Widget"]') as HTMLIFrameElement;
-              if (iframe && iframe.contentWindow) {
-                iframe.contentWindow.postMessage(
-                  JSON.stringify({
-                    type: 'CHIDI_WIDGET_OPEN',
-                    product: { id: product.id, name: product.name, price: product.price }
-                  }),
-                  '*'
-                );
-              }
+              // Open Mama Nkechi assistant
+              const chatBtn = document.getElementById('chatToggle');
+              if (chatBtn) chatBtn.click();
             }}
           >
             You fit price am

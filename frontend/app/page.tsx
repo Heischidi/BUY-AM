@@ -214,7 +214,7 @@ function HomeContent() {
             <div className="trust-card">
               <div className="trust-icon">👩🏾‍🦱</div>
               <div>
-                <strong>Amara AI</strong>
+                <strong>Mama Nkechi AI</strong>
                 <span>Smart shopping assistant</span>
               </div>
             </div>

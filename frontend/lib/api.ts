@@ -171,7 +171,7 @@ export const addressesApi = {
     request(`/users/addresses/${id}`, { method: 'DELETE', token }),
 };
 
-// ─── AI / Amara ────────────────────────────────────────────────
+// ─── AI / Mama Nkechi ──────────────────────────────────────────
 
 export const aiApi = {
   chat: (message: string, sessionToken?: string, token?: string) =>
