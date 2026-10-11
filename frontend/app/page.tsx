@@ -126,7 +126,7 @@ function HomeContent() {
               Buy it at <span>Buy Am.</span>
             </h1>
             <p className="hero-copy" style={{ opacity: 0 }}>
-              From fresh groceries to electronics, building materials to bulk procurement — find everything you need from trusted Nigerian sellers. Delivered to your door.
+              From fresh groceries to electronics, building materials to bulk procurement — find everything you need directly from our store. Delivered to your door.
             </p>
 
             <form className="hero-search" onSubmit={handleHeroSearch} style={{ opacity: 0 }}>
@@ -160,8 +160,8 @@ function HomeContent() {
           <div className="hero-art" style={{ opacity: 0, animation: 'heroArtFloat 0.8s 0.6s ease forwards' }}>
             <div className="market-card">
               <div className="market-copy">
-                <small>Trusted Sellers</small>
-                <strong>100%<br />Naija<br />Market</strong>
+                <small>Official Store</small>
+                <strong>100%<br />Direct<br />Brand</strong>
               </div>
               <div className="basket" />
             </div>
@@ -205,10 +205,10 @@ function HomeContent() {
               </div>
             </div>
             <div className="trust-card">
-              <div className="trust-icon">🤝</div>
+              <div className="trust-icon">✨</div>
               <div>
-                <strong>Verified Sellers</strong>
-                <span>Trusted businesses only</span>
+                <strong>Quality Guaranteed</strong>
+                <span>100% authentic brand items</span>
               </div>
             </div>
             <div className="trust-card">

@@ -160,15 +160,6 @@ export const procurementApi = {
   myRequests: (token: string) => request('/procurement/requests/my', { token }),
 };
 
-// ─── Sellers ───────────────────────────────────────────────────
-
-export const sellersApi = {
-  register: (data: unknown, token: string) =>
-    request('/sellers', { method: 'POST', body: data, token }),
-  getMe: (token: string) => request('/sellers/me', { token }),
-  updateMe: (data: unknown, token: string) =>
-    request('/sellers/me', { method: 'PATCH', body: data, token }),
-};
 
 // ─── Addresses ─────────────────────────────────────────────────
 

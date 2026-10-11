@@ -12,10 +12,9 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3>Marketplace</h3>
+            <h3>Shop</h3>
             <Link href="/#categories">Categories</Link>
             <Link href="/#products">Featured products</Link>
-            <Link href="/seller">Become a seller</Link>
           </div>
 
           <div>

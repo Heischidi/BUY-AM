@@ -4,10 +4,9 @@ from sqlalchemy import or_, func
 from typing import Optional, List
 from decimal import Decimal
 from app.core.database import get_db
-from app.core.security import get_current_user, require_seller, require_admin
+from app.core.security import require_admin
 from app.models.product import Product, ProductImage, ProductStatus
 from app.models.category import Category
-from app.models.seller import Seller, SellerStatus
 from app.schemas.product import (
     ProductListItem, ProductDetail, ProductCreate, ProductUpdate
 )
@@ -41,7 +40,6 @@ def product_query(db: Session):
     return db.query(Product).options(
         joinedload(Product.images),
         joinedload(Product.category),
-        joinedload(Product.seller),
     )
 
 
@@ -125,29 +123,18 @@ def get_product(slug: str, db: Session = Depends(get_db)):
 @router.post("", response_model=ProductDetail, status_code=201)
 def create_product(
     body: ProductCreate,
-    current_user=Depends(require_seller),
+    current_user=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    seller = db.query(Seller).filter(
-        Seller.user_id == current_user.id,
-        Seller.verification_status == SellerStatus.approved,
-    ).first()
-    if not seller and current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Seller profile not approved")
-
     image_url = body.image_url
     body_dict = body.model_dump(exclude={"image_url"})
 
     slug = make_unique_slug(db, body.name)
-    product = Product(
-        seller_id=seller.id if seller else 1,
-        slug=slug,
-        **body_dict,
-    )
+    product = Product(slug=slug, **body_dict)
     db.add(product)
     db.commit()
     db.refresh(product)
-    
+
     if image_url:
         img = ProductImage(product_id=product.id, url=image_url)
         db.add(img)
@@ -159,18 +146,12 @@ def create_product(
 def update_product(
     product_id: int,
     body: ProductUpdate,
-    current_user=Depends(require_seller),
+    current_user=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-
-    # Ensure seller owns the product (unless admin)
-    if current_user.role != "admin":
-        seller = db.query(Seller).filter(Seller.user_id == current_user.id).first()
-        if not seller or product.seller_id != seller.id:
-            raise HTTPException(status_code=403, detail="Not your product")
 
     update_data = body.model_dump(exclude_unset=True)
     if "name" in update_data:
@@ -187,17 +168,11 @@ def update_product(
 @router.delete("/{product_id}", status_code=204)
 def delete_product(
     product_id: int,
-    current_user=Depends(require_seller),
+    current_user=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-
-    if current_user.role != "admin":
-        seller = db.query(Seller).filter(Seller.user_id == current_user.id).first()
-        if not seller or product.seller_id != seller.id:
-            raise HTTPException(status_code=403, detail="Not your product")
-
     db.delete(product)
     db.commit()

@@ -107,14 +107,7 @@ export default function Account() {
           >
             👤 Profile Settings
           </button>
-          {user.role === 'seller' && (
-            <button 
-              onClick={() => router.push('/seller')} 
-              style={{ textAlign: 'left', padding: '14px 20px', borderRadius: 16, color: 'var(--green)', fontWeight: 800, marginTop: 20 }}
-            >
-              🏪 Seller Dashboard
-            </button>
-          )}
+
         </div>
 
         {/* Content Area */}

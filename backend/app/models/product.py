@@ -18,7 +18,6 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
-    seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     name = Column(String(255), nullable=False)
     slug = Column(String(300), unique=True, nullable=False, index=True)
@@ -33,7 +32,6 @@ class Product(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    seller = relationship("Seller", back_populates="products")
     category = relationship("Category", back_populates="products")
     images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
     cart_items = relationship("CartItem", back_populates="product")

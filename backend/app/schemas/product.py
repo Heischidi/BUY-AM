@@ -27,14 +27,6 @@ class ProductImageResponse(BaseModel):
         from_attributes = True
 
 
-class SellerPublicResponse(BaseModel):
-    id: int
-    business_name: str
-
-    class Config:
-        from_attributes = True
-
-
 class ProductListItem(BaseModel):
     id: int
     name: str
@@ -46,7 +38,6 @@ class ProductListItem(BaseModel):
     featured: bool
     category: Optional[CategoryResponse] = None
     images: List[ProductImageResponse] = []
-    seller: Optional[SellerPublicResponse] = None
     created_at: datetime
 
     class Config:

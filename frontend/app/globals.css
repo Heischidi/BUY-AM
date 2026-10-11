@@ -247,13 +247,6 @@ h1, h2, h3, h4 {
   font-weight: 800;
 }
 
-.seller-link {
-  display: none;
-  color: var(--green);
-  font-weight: 800;
-  white-space: nowrap;
-}
-
 /* ── Hero ────────────────────────────────────────────────────── */
 .hero {
   padding: 72px 0 56px;
@@ -1176,10 +1169,6 @@ footer a {
   }
 }
 
-/* ── Responsive ──────────────────────────────────────────────── */
-@media (min-width: 900px) {
-  .seller-link { display: block; }
-}
 
 /* Tablet (max 900px) */
 @media (max-width: 900px) {

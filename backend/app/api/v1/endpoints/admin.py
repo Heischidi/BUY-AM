@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import require_admin
 from app.models.user import User
-from app.models.seller import Seller, SellerStatus
 from app.models.product import Product, ProductStatus
 from app.models.order import Order
 from app.models.procurement import ProcurementRequest
@@ -17,35 +16,6 @@ def list_users(skip: int = 0, limit: int = 50, _=Depends(require_admin), db: Ses
     users = db.query(User).offset(skip).limit(limit).all()
     return [{"id": u.id, "email": u.email, "name": f"{u.first_name} {u.last_name}",
              "role": u.role, "is_active": u.is_active, "created_at": u.created_at} for u in users]
-
-
-@router.get("/sellers")
-def list_sellers(status: str = None, _=Depends(require_admin), db: Session = Depends(get_db)):
-    q = db.query(Seller)
-    if status:
-        q = q.filter(Seller.verification_status == status)
-    sellers = q.all()
-    return sellers
-
-
-@router.patch("/sellers/{seller_id}/approve")
-def approve_seller(seller_id: int, _=Depends(require_admin), db: Session = Depends(get_db)):
-    seller = db.query(Seller).filter(Seller.id == seller_id).first()
-    if not seller:
-        raise HTTPException(status_code=404, detail="Seller not found")
-    seller.verification_status = SellerStatus.approved
-    db.commit()
-    return {"message": "Seller approved"}
-
-
-@router.patch("/sellers/{seller_id}/reject")
-def reject_seller(seller_id: int, _=Depends(require_admin), db: Session = Depends(get_db)):
-    seller = db.query(Seller).filter(Seller.id == seller_id).first()
-    if not seller:
-        raise HTTPException(status_code=404, detail="Seller not found")
-    seller.verification_status = SellerStatus.rejected
-    db.commit()
-    return {"message": "Seller rejected"}
 
 
 @router.patch("/products/{product_id}/disable")

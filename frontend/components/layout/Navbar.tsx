@@ -52,8 +52,6 @@ export default function Navbar() {
           <button className="search-button" type="submit">Search</button>
         </form>
 
-        <Link className="seller-link" href="/seller">Sell on Buy Am</Link>
-
         <div className="nav-actions" ref={actionsRef}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

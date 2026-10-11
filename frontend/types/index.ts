@@ -6,7 +6,7 @@ export interface User {
   last_name: string;
   email: string;
   phone?: string;
-  role: 'customer' | 'seller' | 'admin';
+  role: 'customer' | 'admin';
   is_verified: boolean;
   is_active: boolean;
   created_at: string;
@@ -28,24 +28,7 @@ export interface ProductImage {
   alt_text?: string;
   sort_order: number;
 }
-
-export interface SellerPublic {
-  id: number;
-  business_name: string;
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  price: number;
-  compare_at_price?: number;
-  stock_quantity: number;
-  status: string;
-  featured: boolean;
-  category?: Category;
   images: ProductImage[];
-  seller?: SellerPublic;
   created_at: string;
   description?: string;
   sku?: string;
@@ -131,19 +114,6 @@ export interface ProcurementRequest {
   created_at: string;
 }
 
-// ─── Seller ───────────────────────────────────────────────────────────────────
-
-export interface Seller {
-  id: number;
-  user_id: number;
-  business_name: string;
-  description?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  verification_status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-}
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 

@@ -7,7 +7,6 @@ from app.core.database import Base
 
 class UserRole(str, enum.Enum):
     customer = "customer"
-    seller = "seller"
     admin = "admin"
 
 
@@ -27,7 +26,6 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    seller_profile = relationship("Seller", back_populates="user", uselist=False)
     addresses = relationship("Address", back_populates="user")
     cart = relationship("Cart", back_populates="user", uselist=False)
     wishlist_items = relationship("WishlistItem", back_populates="user")

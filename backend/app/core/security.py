@@ -89,15 +89,6 @@ async def get_current_active_user(current_user=Depends(get_current_user)):
     return current_user
 
 
-async def require_seller(current_user=Depends(get_current_user)):
-    if current_user.role not in ("seller", "admin"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seller privileges required",
-        )
-    return current_user
-
-
 async def require_admin(current_user=Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(

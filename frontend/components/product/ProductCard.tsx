@@ -70,9 +70,6 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
         <Link href={`/products/${product.slug}`}>
           <div className="product-name">{product.name}</div>
         </Link>
-        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>
-          Sold by: <span style={{ fontWeight: 600 }}>{product.seller?.business_name || 'Buy Am Direct'}</span>
-        </div>
         <div className="product-bottom">
           <span className="price">{money(Number(product.price))}</span>
           <button

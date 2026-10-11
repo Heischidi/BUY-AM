@@ -119,17 +119,6 @@ export default function ProductPage() {
             </button>
           </div>
 
-          {product.seller && (
-            <div style={{ marginTop: 32, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 24 }}>
-                🏪
-              </div>
-              <div>
-                <div style={{ fontSize: 14, color: 'var(--muted)' }}>Sold by</div>
-                <div style={{ fontWeight: 800 }}>{product.seller.business_name}</div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
