@@ -72,46 +72,45 @@ export default function Account() {
   };
 
   return (
-    <div className="container" style={{ padding: '60px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-        <h1>My Account</h1>
-        <button onClick={logout} className="secondary-button" style={{ borderColor: 'var(--red)', color: 'var(--red)' }}>
+    <div className="container account-page-container">
+      <div className="account-header">
+        <h1 className="account-title">My Account</h1>
+        <button onClick={logout} className="secondary-button account-signout-btn">
           Sign Out
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: 40 }}>
-        {/* Sidebar Nav */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="account-layout">
+        {/* Sidebar / Tabs Nav */}
+        <div className="account-nav">
           <button 
             onClick={() => setActiveTab('orders')} 
-            style={{ textAlign: 'left', padding: '14px 20px', borderRadius: 16, background: activeTab === 'orders' ? 'var(--yellow)' : 'transparent', fontWeight: activeTab === 'orders' ? 800 : 500 }}
+            className={`account-nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
           >
-            📦 My Orders
+            <span>📦</span> My Orders
           </button>
           <button 
             onClick={() => setActiveTab('wishlist')} 
-            style={{ textAlign: 'left', padding: '14px 20px', borderRadius: 16, background: activeTab === 'wishlist' ? 'var(--yellow)' : 'transparent', fontWeight: activeTab === 'wishlist' ? 800 : 500 }}
+            className={`account-nav-btn ${activeTab === 'wishlist' ? 'active' : ''}`}
           >
-            ♥️ Wishlist
+            <span>♥️</span> Wishlist
           </button>
           <button 
             onClick={() => setActiveTab('addresses')} 
-            style={{ textAlign: 'left', padding: '14px 20px', borderRadius: 16, background: activeTab === 'addresses' ? 'var(--yellow)' : 'transparent', fontWeight: activeTab === 'addresses' ? 800 : 500 }}
+            className={`account-nav-btn ${activeTab === 'addresses' ? 'active' : ''}`}
           >
-            📍 Saved Addresses
+            <span>📍</span> Saved Addresses
           </button>
           <button 
             onClick={() => setActiveTab('profile')} 
-            style={{ textAlign: 'left', padding: '14px 20px', borderRadius: 16, background: activeTab === 'profile' ? 'var(--yellow)' : 'transparent', fontWeight: activeTab === 'profile' ? 800 : 500 }}
+            className={`account-nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
           >
-            👤 Profile Settings
+            <span>👤</span> Profile Settings
           </button>
-
         </div>
 
         {/* Content Area */}
-        <div style={{ background: 'var(--white)', padding: 40, borderRadius: 24, boxShadow: 'var(--shadow)' }}>
+        <div className="account-content">
           
           {/* Orders */}
           {activeTab === 'orders' && (
@@ -125,14 +124,14 @@ export default function Account() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {orders.map(o => (
-                    <div key={o.id} style={{ padding: 20, borderRadius: 16, border: '2px solid rgba(37,28,24,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={o.id} className="order-card">
                       <div>
                         <div style={{ fontWeight: 800, marginBottom: 4 }}>Order #{o.order_number}</div>
                         <div style={{ color: 'var(--muted)', fontSize: 14 }}>
                           {new Date(o.created_at).toLocaleDateString()} • {o.items.length} items
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
+                      <div className="order-card-right">
                         <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--red)', marginBottom: 4 }}>
                           {money(Number(o.total))}
                         </div>
@@ -157,7 +156,7 @@ export default function Account() {
                   <span>Save items you love by clicking the heart icon.</span>
                 </div>
               ) : (
-                <div className="product-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <div className="account-product-grid">
                   {wishlistProducts.map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}
@@ -169,9 +168,9 @@ export default function Account() {
           {/* Addresses */}
           {activeTab === 'addresses' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
                 <h2 style={{ fontSize: 28 }}>Saved Addresses</h2>
-                <button className="primary-button" style={{ padding: '10px 16px', fontSize: 14 }}>+ Add New</button>
+                <button className="primary-button" style={{ padding: '10px 16px', fontSize: 14, whiteSpace: 'nowrap' }}>+ Add New</button>
               </div>
               
               {addresses.length === 0 ? (
@@ -180,7 +179,7 @@ export default function Account() {
                   <span>Add an address for faster checkout.</span>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="addresses-grid">
                   {addresses.map(addr => (
                     <div key={addr.id} style={{ padding: 20, borderRadius: 16, border: '2px solid rgba(37,28,24,0.08)' }}>
                       {addr.is_default && <span style={{ display: 'inline-block', padding: '4px 8px', background: 'var(--yellow)', borderRadius: 999, fontSize: 12, fontWeight: 800, marginBottom: 12 }}>DEFAULT</span>}
@@ -201,10 +200,10 @@ export default function Account() {
           {/* Profile */}
           {activeTab === 'profile' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
                 <h2 style={{ fontSize: 28 }}>Profile Settings</h2>
                 {!isEditProfile && (
-                  <button className="secondary-button" onClick={() => setIsEditProfile(true)}>Edit Profile</button>
+                  <button className="secondary-button" style={{ whiteSpace: 'nowrap' }} onClick={() => setIsEditProfile(true)}>Edit Profile</button>
                 )}
               </div>
 
@@ -230,14 +229,14 @@ export default function Account() {
                   </div>
                 </form>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                <div className="profile-details-grid">
                   <div>
                     <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 4 }}>Name</div>
                     <div style={{ fontWeight: 800, fontSize: 18 }}>{user.first_name} {user.last_name}</div>
                   </div>
                   <div>
                     <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 4 }}>Email Address</div>
-                    <div style={{ fontWeight: 800, fontSize: 18 }}>{user.email}</div>
+                    <div style={{ fontWeight: 800, fontSize: 18, wordBreak: 'break-all' }}>{user.email}</div>
                   </div>
                   <div>
                     <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 4 }}>Phone Number</div>

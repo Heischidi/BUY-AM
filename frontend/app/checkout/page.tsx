@@ -82,7 +82,7 @@ export default function Checkout() {
     <div className="container" style={{ padding: '60px 0' }}>
       <h1 style={{ marginBottom: 32 }}>Checkout</h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 40, alignItems: 'start' }}>
+      <div className="checkout-layout">
         {/* Form */}
         <div style={{ background: 'var(--white)', padding: 32, borderRadius: 24, boxShadow: 'var(--shadow)' }}>
           <h2 style={{ fontSize: 24, marginBottom: 24 }}>Shipping Details</h2>

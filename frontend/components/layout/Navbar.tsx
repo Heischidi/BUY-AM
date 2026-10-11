@@ -57,6 +57,7 @@ export default function Navbar() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Link
                 href="/account"
+                className="nav-user-pill"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -66,18 +67,21 @@ export default function Navbar() {
                   background: 'var(--white)',
                   fontWeight: 700,
                   fontSize: '14px',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 👤 {user.first_name}
               </Link>
               <button
                 onClick={logout}
+                className="nav-logout-btn"
                 style={{
                   padding: '8px 14px',
                   borderRadius: '999px',
                   background: 'rgba(37,28,24,0.07)',
                   fontSize: '13px',
                   fontWeight: 700,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Logout

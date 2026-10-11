@@ -63,10 +63,9 @@ export default function ProductPage() {
     }
     openCart();
   };
-
   return (
-    <div className="container" style={{ padding: '60px 0' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'start' }}>
+    <div className="container" style={{ padding: '40px 0 60px' }}>
+      <div className="product-detail-grid">
         
         {/* Left: Images */}
         <div style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', background: '#f1dfc9', aspectRatio: '1/1' }}>
