@@ -28,6 +28,17 @@ export interface ProductImage {
   alt_text?: string;
   sort_order: number;
 }
+
+export interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  compare_at_price?: number;
+  stock_quantity: number;
+  status: string;
+  featured: boolean;
+  category?: Category;
   images: ProductImage[];
   created_at: string;
   description?: string;
