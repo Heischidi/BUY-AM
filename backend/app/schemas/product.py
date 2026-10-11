@@ -36,6 +36,7 @@ class ProductListItem(BaseModel):
     stock_quantity: int
     status: str
     featured: bool
+    is_negotiable: bool = False
     category: Optional[CategoryResponse] = None
     images: List[ProductImageResponse] = []
     created_at: datetime
@@ -63,6 +64,7 @@ class ProductCreate(BaseModel):
     sku: Optional[str] = None
     status: str = "active"
     featured: bool = False
+    is_negotiable: bool = False
     image_url: Optional[str] = None
 
 
@@ -76,6 +78,7 @@ class ProductUpdate(BaseModel):
     sku: Optional[str] = None
     status: Optional[str] = None
     featured: Optional[bool] = None
+    is_negotiable: Optional[bool] = None
 
 
 class ProductSearchParams(BaseModel):

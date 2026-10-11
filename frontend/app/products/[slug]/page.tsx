@@ -63,6 +63,22 @@ export default function ProductPage() {
     }
     openCart();
   };
+
+  const handlePriceAm = () => {
+    if (!product) return;
+    window.dispatchEvent(
+      new CustomEvent('open-bargain-chat', {
+        detail: {
+          product: {
+            id: product.id,
+            name: product.name,
+            price: Number(product.price),
+          },
+        },
+      })
+    );
+  };
+
   return (
     <div className="container" style={{ padding: '40px 0 60px' }}>
       <div className="product-detail-grid">
@@ -88,8 +104,15 @@ export default function ProductPage() {
           </div>
           <h1 style={{ fontSize: 48, marginBottom: 16 }}>{product.name}</h1>
           
-          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--red)', marginBottom: 24 }}>
-            {money(Number(product.price))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
+            <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--red)' }}>
+              {money(Number(product.price))}
+            </span>
+            {product.is_negotiable && (
+              <span className="negotiable-pill">
+                🔥 You fit price am
+              </span>
+            )}
           </div>
 
           <p style={{ color: 'var(--muted)', fontSize: 18, lineHeight: 1.6, marginBottom: 32 }}>
@@ -97,7 +120,7 @@ export default function ProductPage() {
           </p>
 
           <div style={{ padding: '24px', borderRadius: '24px', background: 'var(--white)', border: '2px solid rgba(37,28,24,0.08)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
               <div style={{ fontWeight: 800 }}>Quantity</div>
               <div className="quantity-control" style={{ margin: 0 }}>
                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={{ width: 32, height: 32 }}>−</button>
@@ -109,13 +132,27 @@ export default function ProductPage() {
               </span>
             </div>
 
-            <button 
-              className="primary-button" 
-              style={{ width: '100%', fontSize: 18, padding: 18 }}
-              onClick={handleAddToCart}
-            >
-              Add {quantity} to Cart — {money(Number(product.price) * quantity)}
-            </button>
+            <div className="product-page-actions">
+              <button 
+                className="primary-button product-add-btn" 
+                onClick={handleAddToCart}
+              >
+                Add {quantity} to Cart — {money(Number(product.price) * quantity)}
+              </button>
+
+              {product.is_negotiable && (
+                <button 
+                  type="button"
+                  className="price-am-page-btn"
+                  onClick={handlePriceAm}
+                  title="Price this product with Mama Nkechi"
+                >
+                  <span style={{ fontSize: 20 }}>🏷️</span>
+                  <span>Price Am</span>
+                  <span className="price-am-badge">Bargain with Mama Nkechi</span>
+                </button>
+              )}
+            </div>
           </div>
 
         </div>

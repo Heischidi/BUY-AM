@@ -54,7 +54,27 @@ export default function Navbar() {
 
         <div className="nav-actions" ref={actionsRef}>
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {user.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '8px 12px',
+                    borderRadius: '999px',
+                    background: '#fee2e2',
+                    color: 'var(--red)',
+                    fontWeight: 800,
+                    fontSize: '13px',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title="Admin Portal - Manage Products & Price Am"
+                >
+                  👑 Admin
+                </Link>
+              )}
               <Link
                 href="/account"
                 className="nav-user-pill"

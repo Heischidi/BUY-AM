@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ordersApi, addressesApi, productsApi, authApi } from '@/lib/api';
@@ -107,6 +108,15 @@ export default function Account() {
           >
             <span>👤</span> Profile Settings
           </button>
+          {user.role === 'admin' && (
+            <Link 
+              href="/admin" 
+              className="account-nav-btn"
+              style={{ background: '#fee2e2', color: 'var(--red)', fontWeight: 800, marginTop: 12 }}
+            >
+              <span>👑</span> Admin Portal (Price Am)
+            </Link>
+          )}
         </div>
 
         {/* Content Area */}

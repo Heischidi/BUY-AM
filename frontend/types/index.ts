@@ -38,6 +38,7 @@ export interface Product {
   stock_quantity: number;
   status: string;
   featured: boolean;
+  is_negotiable?: boolean;
   category?: Category;
   images: ProductImage[];
   created_at: string;

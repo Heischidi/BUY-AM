@@ -72,20 +72,25 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
         </Link>
         <div className="product-bottom">
           <span className="price">{money(Number(product.price))}</span>
-          <button
-            ref={priceBtnRef}
-            className="price-button"
-            onClick={() => {
-              if (priceBtnRef.current) animateButtonPress(priceBtnRef.current);
-              onPriceClick?.(product);
-              
-              // Open Mama Nkechi assistant
-              const chatBtn = document.getElementById('chatToggle');
-              if (chatBtn) chatBtn.click();
-            }}
-          >
-            You fit price am
-          </button>
+          {product.is_negotiable && (
+            <button
+              ref={priceBtnRef}
+              className="price-button"
+              onClick={() => {
+                if (priceBtnRef.current) animateButtonPress(priceBtnRef.current);
+                onPriceClick?.(product);
+                
+                // Open Mama Nkechi assistant and start bargaining
+                window.dispatchEvent(
+                  new CustomEvent('open-bargain-chat', {
+                    detail: { product }
+                  })
+                );
+              }}
+            >
+              You fit price am
+            </button>
+          )}
         </div>
         <button ref={addBtnRef} className="add-button" onClick={handleAddToCart}>
           Add to cart

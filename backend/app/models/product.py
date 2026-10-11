@@ -28,6 +28,7 @@ class Product(Base):
     sku = Column(String(100), nullable=True, unique=True)
     status = Column(Enum(ProductStatus), default=ProductStatus.active, nullable=False)
     featured = Column(Boolean, default=False)
+    is_negotiable = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

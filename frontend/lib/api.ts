@@ -182,4 +182,26 @@ export const aiApi = {
     }),
 };
 
+// ─── Admin ─────────────────────────────────────────────────────
+
+export const adminApi = {
+  products: (params: { skip?: number; limit?: number } = {}, token: string) => {
+    const qs = new URLSearchParams(
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, String(v)])
+    );
+    return request(`/admin/products${qs.toString() ? `?${qs.toString()}` : ''}`, { token });
+  },
+  toggleNegotiable: (productId: number, is_negotiable: boolean, token: string) =>
+    request(`/admin/products/${productId}/negotiable`, {
+      method: 'PATCH',
+      body: { is_negotiable },
+      token,
+    }),
+  users: (token: string) => request('/admin/users', { token }),
+  orders: (token: string) => request('/admin/orders', { token }),
+  procurement: (token: string) => request('/admin/procurement', { token }),
+};
+
 export { ApiError };

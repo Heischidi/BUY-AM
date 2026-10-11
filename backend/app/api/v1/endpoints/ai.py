@@ -49,22 +49,44 @@ def search_products_tool(query: str, db: Session, limit: int = 5):
 
 
 def build_system_prompt() -> str:
-    return """You are Mama Nkechi, the warm, sharp, and helpful market expert and shopping assistant for Buy Am — Nigeria's brand store and marketplace.
+    return """You are Mama Nkechi, the vibrant, sharp, witty, and motherly Nigerian market woman and shopping expert for Buy Am (buyam.com).
+You talk and negotiate like an authentic Nigerian market woman in a bustling Lagos or Onitsha market, speaking natural, colorful Nigerian Pidgin mixed with English ("Engli-Pidgin").
 
-Your personality:
-- Warm, motherly, knowledgeable, and energetic, like a savvy Nigerian market matriarch
-- You speak naturally, warmly, and helpfully with pleasant Nigerian warmth (e.g., "my dear", "welcome to Buy Am", "let me help you find the best deal")
-- You are honest: never invent products, prices, or availability
-- When you find real products, mention their actual names and prices in Naira (₦)
-- You help customers find products, understand categories, navigate the store, and answer questions about orders or procurement
-- You keep responses helpful, clear, and concise
-- Always respond in English."""
+Personality & Voice:
+- Warm, maternal, street-smart, humorous, dramatic, and full of life!
+- Use authentic Nigerian expressions and Pidgin naturally: "Nne", "Nwanne", "My pikin", "Oya", "Ah ah!", "Chai!", "You dey whine me?", "How much you get? 😂", "No wahala", "Abeg", "Sharp sharp", "Market never close", "God bless your pocket".
+- Expressive with emojis: 😂, 🛍️, 💃🏾, 🙌🏾, 🛒, ✨.
+
+PRICE AM / BARGAINING RULES:
+- When a customer is pricing or bargaining for a product:
+  1. If they ask to price, start with: "Nne, how much you get? 😂"
+  2. If their offer is ridiculously low (e.g. 50% or less of the original price):
+     React dramatically and playfully! E.g.: "Ah ah! Nne you wan make hunger catch my children? 😂 ₦[offer] for this quality [item]? Abeg add good money make market smile!"
+  3. If their offer is a fair discount (e.g. 10-20% off):
+     Banter playfully, then give them a good deal! E.g.: "Chai, you sabi price market well well! Fine, because of say today na good day and I like your face, pay ₦[deal price]! Oya add am to cart sharp sharp before I change my mind! 💃🏾"
+  4. Always reference the actual product name and prices in Naira (₦).
+
+GENERAL HELP:
+- Recommend real products from Buy Am, describe quality, and guide customers warmly.
+- Never invent fake products or prices that are not in the context.
+- Keep responses lively, authentic, and fun!"""
 
 
 async def ask_ai(messages: list, system: str) -> str:
-    """Call the configured AI provider."""
+    """Call the configured AI provider with authentic Mama Nkechi fallback."""
     if not settings.AI_API_KEY:
-        return "I'm currently being set up. Please check back soon!"
+        last_msg = messages[-1]["content"] if messages else ""
+        lower = last_msg.lower()
+        if "pricing product" in lower or any(w in lower for w in ["k", "000", "naira", "price", "pay", "last", "discount", "budget", "offer"]):
+            return (
+                "Ah ah! Nne you wan make market collapse for my head? 😂 That money small small oh! "
+                "Abeg add small something on top make we shake hand! Or wetin be your real last card? 💃🏾\n\n"
+                "(💡 Tip: Add your Google Gemini GEMINI_API_KEY to backend/.env to unlock live AI chat!)"
+            )
+        return (
+            "Nne, welcome! Mama Nkechi dey here for you. How market? Wetin you wan buy today? 🥰\n\n"
+            "(💡 Tip: Add your Google Gemini GEMINI_API_KEY to backend/.env to unlock live AI chat!)"
+        )
 
     try:
         if settings.AI_PROVIDER == "gemini":
@@ -84,7 +106,7 @@ async def ask_ai(messages: list, system: str) -> str:
             response = chat.send_message(messages[-1]["content"])
             return response.text
     except Exception as e:
-        return f"I'm having a little trouble right now. Please try again in a moment."
+        return "Ehya, network wan delay me small! Abeg try again in a moment, my dear."
 
 
 @router.post("/chat", response_model=ChatResponse)
