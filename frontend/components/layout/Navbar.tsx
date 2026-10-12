@@ -128,18 +128,36 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <Link
-              href="/auth/login"
-              style={{
-                padding: '10px 18px',
-                borderRadius: '999px',
-                background: 'var(--white)',
-                fontWeight: 700,
-                fontSize: '14px',
-              }}
-            >
-              Sign in
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link
+                href="/staff"
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '999px',
+                  background: 'rgba(37,28,24,0.06)',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  color: 'var(--text)',
+                  whiteSpace: 'nowrap',
+                }}
+                title="Staff Clock-In Terminal"
+              >
+                ⏰ Staff Clock-In
+              </Link>
+              <Link
+                href="/auth/login"
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '999px',
+                  background: 'var(--white)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Sign in
+              </Link>
+            </div>
           )}
 
           {user?.role !== 'admin' && (

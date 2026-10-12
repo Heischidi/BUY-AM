@@ -10,6 +10,7 @@ from app.models.order import Order, OrderItem
 from app.models.cart import Cart, CartItem
 from app.models.chat import ChatSession, ChatMessage
 from app.models.procurement import ProcurementRequest
+from app.models.staff import Staff, StaffAttendance
 
 logger = logging.getLogger("buyam.init_db")
 
@@ -88,6 +89,14 @@ def init_db():
                         report["columns_added"].append("products.max_price")
                     except Exception as ex:
                         logger.warning(f"Failed to add products.max_price: {ex}")
+
+                if "discount_percentage" not in prod_cols:
+                    logger.info("Adding 'discount_percentage' column to products table")
+                    try:
+                        conn.execute(text("ALTER TABLE products ADD COLUMN discount_percentage NUMERIC(5, 2)"))
+                        report["columns_added"].append("products.discount_percentage")
+                    except Exception as ex:
+                        logger.warning(f"Failed to add products.discount_percentage: {ex}")
 
                 # Clean up NULL units or max_prices
                 try:

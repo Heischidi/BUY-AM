@@ -32,6 +32,7 @@ class Product(Base):
     unit = Column(String(50), default="quantity", nullable=False)  # e.g., 'quantity', 'yard', 'kg', 'pack'
     min_price = Column(Numeric(12, 2), nullable=True)  # Floor price for Mama Nkechi
     max_price = Column(Numeric(12, 2), nullable=True)  # Ceiling price (displayed on storefront)
+    discount_percentage = Column(Numeric(5, 2), nullable=True, default=None)  # e.g. 10.00 = 10% off
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -41,6 +42,14 @@ class Product(Base):
     cart_items = relationship("CartItem", back_populates="product")
     wishlist_items = relationship("WishlistItem", back_populates="product")
     order_items = relationship("OrderItem", back_populates="product")
+
+    @property
+    def discounted_price(self):
+        if self.discount_percentage is not None and float(self.discount_percentage) > 0 and self.price is not None:
+            from decimal import Decimal
+            disc = Decimal(str(self.discount_percentage))
+            return round(self.price * (Decimal("1") - disc / Decimal("100")), 2)
+        return None
 
 
 class ProductImage(Base):

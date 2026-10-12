@@ -54,6 +54,26 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
         ) : (
           <div style={{ width: '100%', height: '100%', background: '#f1dfc9' }} />
         )}
+        {product.discount_percentage && product.discount_percentage > 0 && (
+          <span
+            style={{
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: 800,
+              padding: '3px 8px',
+              borderRadius: '999px',
+              zIndex: 3,
+              boxShadow: '0 2px 8px rgba(220, 38, 38, 0.4)',
+              letterSpacing: '0.02em',
+            }}
+          >
+            -{product.discount_percentage}% OFF
+          </span>
+        )}
         <button
           className={`heart-button ${saved ? 'saved' : ''}`}
           onClick={() => toggle(product.id)}
@@ -71,14 +91,32 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
           <div className="product-name">{product.name}</div>
         </Link>
         <div className="product-bottom">
-          <span className="price">
-            {money(Number(product.price))}
-            {product.unit && product.unit !== 'quantity' && product.unit !== 'item' && (
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginLeft: 4 }}>
-                /{product.unit}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+            {product.discount_percentage && product.discount_percentage > 0 ? (
+              <>
+                <span className="price" style={{ color: 'var(--red)', fontWeight: 800 }}>
+                  {money(product.discounted_price ?? Math.round(Number(product.price) * (1 - product.discount_percentage / 100)))}
+                  {product.unit && product.unit !== 'quantity' && product.unit !== 'item' && (
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginLeft: 4 }}>
+                      /{product.unit}
+                    </span>
+                  )}
+                </span>
+                <span style={{ fontSize: 12, textDecoration: 'line-through', color: 'var(--muted)', fontWeight: 600 }}>
+                  {money(Number(product.price))}
+                </span>
+              </>
+            ) : (
+              <span className="price">
+                {money(Number(product.price))}
+                {product.unit && product.unit !== 'quantity' && product.unit !== 'item' && (
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginLeft: 4 }}>
+                    /{product.unit}
+                  </span>
+                )}
               </span>
             )}
-          </span>
+          </div>
           {product.is_negotiable && (
             <button
               ref={priceBtnRef}

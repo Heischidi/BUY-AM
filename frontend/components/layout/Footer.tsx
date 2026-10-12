@@ -28,6 +28,7 @@ export default function Footer() {
             <h3>Company</h3>
             <Link href="/about">About Buy Am</Link>
             <Link href="/community">Our community</Link>
+            <Link href="/staff" style={{ color: 'var(--red)', fontWeight: 600 }}>Staff Clock-In</Link>
             <Link href="/terms">Terms and privacy</Link>
           </div>
         </div>

@@ -37,6 +37,8 @@ export interface Product {
   slug: string;
   price: number;
   compare_at_price?: number;
+  discount_percentage?: number;
+  discounted_price?: number;
   stock_quantity: number;
   unit?: string;
   status: string;

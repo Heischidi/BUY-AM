@@ -47,6 +47,10 @@ class ProductNegotiableUpdate(BaseModel):
     max_price: Optional[float] = None
 
 
+class ProductDiscountUpdate(BaseModel):
+    discount_percentage: Optional[float] = None  # None or 0 removes discount; e.g. 10.0 = 10% off
+
+
 class AdminProductCreate(BaseModel):
     name: str
     description: Optional[str] = None
@@ -59,6 +63,7 @@ class AdminProductCreate(BaseModel):
     max_price: Optional[float] = None
     image_url: Optional[str] = None
     featured: bool = False
+    discount_percentage: Optional[float] = None
 
 
 class AdminProductUpdate(BaseModel):
@@ -74,6 +79,7 @@ class AdminProductUpdate(BaseModel):
     image_url: Optional[str] = None
     status: Optional[str] = None
     featured: Optional[bool] = None
+    discount_percentage: Optional[float] = None
 
 
 # ─── Products Endpoints ────────────────────────────────────────
@@ -106,6 +112,8 @@ def list_admin_products(
             "is_negotiable": bool(p.is_negotiable),
             "min_price": float(p.min_price) if p.min_price is not None else None,
             "max_price": float(p.max_price) if p.max_price is not None else None,
+            "discount_percentage": float(p.discount_percentage) if p.discount_percentage is not None else None,
+            "discounted_price": round(float(p.price) * (1 - float(p.discount_percentage) / 100), 2) if p.discount_percentage else None,
             "category": {"id": p.category.id, "name": p.category.name} if p.category else None,
             "image": p.images[0].url if p.images else None,
             "description": p.description,
@@ -127,6 +135,7 @@ def create_admin_product(
         effective_price = body.max_price
 
     slug = make_unique_slug(db, body.name)
+    discount = body.discount_percentage if body.discount_percentage and body.discount_percentage > 0 else None
     product = Product(
         name=body.name,
         slug=slug,
@@ -140,6 +149,7 @@ def create_admin_product(
         max_price=body.max_price if body.is_negotiable else None,
         featured=body.featured,
         status=ProductStatus.active,
+        discount_percentage=discount,
     )
     db.add(product)
     db.commit()
@@ -160,6 +170,7 @@ def create_admin_product(
         "is_negotiable": product.is_negotiable,
         "min_price": float(product.min_price) if product.min_price else None,
         "max_price": float(product.max_price) if product.max_price else None,
+        "discount_percentage": float(product.discount_percentage) if product.discount_percentage else None,
         "message": "Product created successfully",
     }
 
@@ -214,6 +225,10 @@ def update_admin_product(
         else:
             db.add(ProductImage(product_id=product.id, url=update_dict["image_url"], alt_text=product.name))
 
+    if "discount_percentage" in update_dict:
+        disc = update_dict["discount_percentage"]
+        product.discount_percentage = disc if disc and disc > 0 else None
+
     db.commit()
     db.refresh(product)
     return {
@@ -225,6 +240,7 @@ def update_admin_product(
         "is_negotiable": product.is_negotiable,
         "min_price": float(product.min_price) if product.min_price else None,
         "max_price": float(product.max_price) if product.max_price else None,
+        "discount_percentage": float(product.discount_percentage) if product.discount_percentage else None,
         "message": "Product updated successfully",
     }
 
@@ -273,6 +289,40 @@ def toggle_product_negotiable(
         "is_negotiable": product.is_negotiable,
         "min_price": float(product.min_price) if product.min_price else None,
         "max_price": float(product.max_price) if product.max_price else None,
+    }
+
+
+@router.patch("/products/{product_id}/discount")
+def set_product_discount(
+    product_id: int,
+    body: ProductDiscountUpdate,
+    _=Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Set or clear a discount percentage on a product."""
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    disc = body.discount_percentage
+    if disc is not None and disc < 0:
+        raise HTTPException(status_code=400, detail="Discount percentage cannot be negative")
+    if disc is not None and disc > 100:
+        raise HTTPException(status_code=400, detail="Discount percentage cannot exceed 100%")
+
+    product.discount_percentage = disc if disc and disc > 0 else None
+    db.commit()
+    db.refresh(product)
+
+    base_price = float(product.price)
+    discounted = round(base_price * (1 - float(disc) / 100), 2) if disc else None
+
+    return {
+        "message": f"Discount {'set to ' + str(disc) + '%' if disc else 'removed'} for '{product.name}'",
+        "product_id": product.id,
+        "price": base_price,
+        "discount_percentage": float(product.discount_percentage) if product.discount_percentage else None,
+        "discounted_price": discounted,
     }
 
 

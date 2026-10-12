@@ -96,10 +96,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToGuestCart = (product: Product) => {
     const existing = guestCart.find(i => i.id === product.id);
     const image = product.images?.[0]?.url || '';
+    const effectivePrice = product.discount_percentage && product.discount_percentage > 0
+      ? (product.discounted_price ?? Math.round(Number(product.price) * (1 - product.discount_percentage / 100)))
+      : Number(product.price);
     if (existing) {
       saveGuestCart(guestCart.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i));
     } else {
-      saveGuestCart([...guestCart, { id: product.id, name: product.name, price: Number(product.price), image, quantity: 1 }]);
+      saveGuestCart([...guestCart, { id: product.id, name: product.name, price: effectivePrice, image, quantity: 1 }]);
     }
     setIsOpen(true);
   };

@@ -8,6 +8,7 @@ from app.api.v1.endpoints.sellers import address_router
 from app.api.v1.endpoints.procurement import router as procurement_router
 from app.api.v1.endpoints.ai import router as ai_router
 from app.api.v1.endpoints.admin import router as admin_router
+from app.api.v1.endpoints.staff import router as staff_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -31,3 +32,4 @@ api_router.include_router(address_router)
 api_router.include_router(procurement_router)
 api_router.include_router(ai_router)
 api_router.include_router(admin_router)
+api_router.include_router(staff_router)

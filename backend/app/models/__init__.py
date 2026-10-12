@@ -6,6 +6,7 @@ from app.models.cart import Cart, CartItem, WishlistItem
 from app.models.order import Order, OrderItem, OrderStatus, PaymentStatus
 from app.models.procurement import ProcurementRequest, ProcurementStatus
 from app.models.chat import ChatSession, ChatMessage, MessageRole
+from app.models.staff import Staff, StaffAttendance, IdentityType, ClockStatus
 
 __all__ = [
     "User", "UserRole",
@@ -16,4 +17,5 @@ __all__ = [
     "Order", "OrderItem", "OrderStatus", "PaymentStatus",
     "ProcurementRequest", "ProcurementStatus",
     "ChatSession", "ChatMessage", "MessageRole",
+    "Staff", "StaffAttendance", "IdentityType", "ClockStatus",
 ]

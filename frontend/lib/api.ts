@@ -227,6 +227,37 @@ export const adminApi = {
   users: (token: string) => request('/admin/users', { token }),
   orders: (token: string) => request('/admin/orders', { token }),
   procurement: (token: string) => request('/admin/procurement', { token }),
+  setDiscount: (productId: number, discount_percentage: number | null, token: string) =>
+    request(`/admin/products/${productId}/discount`, {
+      method: 'PATCH',
+      body: { discount_percentage },
+      token,
+    }),
+};
+
+// ─── Staff ─────────────────────────────────────────────────────
+
+export const staffApi = {
+  // Admin-only
+  list: (token: string) => request('/staff/', { token }),
+  create: (data: unknown, token: string) => request('/staff/', { method: 'POST', body: data, token }),
+  update: (id: number, data: unknown, token: string) => request(`/staff/${id}`, { method: 'PATCH', body: data, token }),
+  delete: (id: number, token: string) => request(`/staff/${id}`, { method: 'DELETE', token }),
+  allAttendance: (params: { staff_id?: number; date_filter?: string } = {}, token: string) => {
+    const qs = new URLSearchParams(
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, String(v)])
+    );
+    return request(`/staff/attendance/all${qs.toString() ? `?${qs.toString()}` : ''}`, { token });
+  },
+  staffAttendance: (staffId: number, token: string) => request(`/staff/${staffId}/attendance`, { token }),
+
+  // Public (clock-in page) — no token required
+  listPublic: () => request('/staff/list/public'),
+  checkStatus: (email: string) => request(`/staff/status/${encodeURIComponent(email)}`),
+  clockIn: (email: string, pin: string) => request('/staff/clock-in', { method: 'POST', body: { email, pin } }),
+  clockOut: (email: string, pin: string) => request('/staff/clock-out', { method: 'POST', body: { email, pin } }),
 };
 
 export { ApiError };

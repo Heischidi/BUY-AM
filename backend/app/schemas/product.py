@@ -33,6 +33,8 @@ class ProductListItem(BaseModel):
     slug: str
     price: Decimal
     compare_at_price: Optional[Decimal] = None
+    discount_percentage: Optional[Decimal] = None
+    discounted_price: Optional[Decimal] = None
     stock_quantity: int
     status: str
     featured: bool
@@ -63,6 +65,7 @@ class ProductCreate(BaseModel):
     category_id: Optional[int] = None
     price: Decimal
     compare_at_price: Optional[Decimal] = None
+    discount_percentage: Optional[Decimal] = None
     stock_quantity: int = 0
     sku: Optional[str] = None
     status: str = "active"
@@ -80,6 +83,7 @@ class ProductUpdate(BaseModel):
     category_id: Optional[int] = None
     price: Optional[Decimal] = None
     compare_at_price: Optional[Decimal] = None
+    discount_percentage: Optional[Decimal] = None
     stock_quantity: Optional[int] = None
     sku: Optional[str] = None
     status: Optional[str] = None

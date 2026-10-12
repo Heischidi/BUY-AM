@@ -52,6 +52,10 @@ export default function ProductPage() {
 
   const saved = isSaved(product.id);
   const image = product.images?.[0]?.url;
+  const hasDiscount = Boolean(product.discount_percentage && product.discount_percentage > 0);
+  const effectivePrice = hasDiscount
+    ? (product.discounted_price ?? Math.round(Number(product.price) * (1 - (product.discount_percentage || 0) / 100)))
+    : Number(product.price);
 
   const handleAddToCart = async () => {
     if (token) {
@@ -72,7 +76,7 @@ export default function ProductPage() {
           product: {
             id: product.id,
             name: product.name,
-            price: Number(product.price),
+            price: effectivePrice,
             min_price: product.min_price,
             max_price: product.max_price,
             unit: product.unit,
@@ -91,6 +95,26 @@ export default function ProductPage() {
           {image ? (
             <Image src={image} alt={product.name} fill style={{ objectFit: 'cover' }} />
           ) : null}
+          {hasDiscount && (
+            <span
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 20,
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                color: '#ffffff',
+                fontSize: 14,
+                fontWeight: 800,
+                padding: '6px 14px',
+                borderRadius: 999,
+                zIndex: 3,
+                boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+                letterSpacing: '0.02em',
+              }}
+            >
+              -{product.discount_percentage}% OFF
+            </span>
+          )}
           <button
             className={`heart-button ${saved ? 'saved' : ''}`}
             onClick={() => toggle(product.id)}
@@ -109,13 +133,18 @@ export default function ProductPage() {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
             <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--red)' }}>
-              {money(Number(product.price))}
+              {money(effectivePrice)}
               {product.unit && product.unit !== 'quantity' && product.unit !== 'item' && (
                 <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--muted)', marginLeft: 6 }}>
                   /{product.unit}
                 </span>
               )}
             </span>
+            {hasDiscount && (
+              <span style={{ fontSize: 20, textDecoration: 'line-through', color: 'var(--muted)', fontWeight: 600 }}>
+                {money(Number(product.price))}
+              </span>
+            )}
             {product.is_negotiable && (
               <span className="negotiable-pill">
                 🔥 You fit price am
@@ -147,7 +176,7 @@ export default function ProductPage() {
                 className="primary-button product-add-btn" 
                 onClick={handleAddToCart}
               >
-                Add {quantity} to Cart — {money(Number(product.price) * quantity)}
+                Add {quantity} to Cart — {money(effectivePrice * quantity)}
               </button>
 
               {product.is_negotiable && (

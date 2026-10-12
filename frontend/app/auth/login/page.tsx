@@ -111,6 +111,27 @@ function LoginContent() {
             Create one
           </Link>
         </p>
+
+        <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #f1f1f1', textAlign: 'center' }}>
+          <Link
+            href="/staff"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              borderRadius: 999,
+              background: '#fef2f2',
+              color: 'var(--red)',
+              fontWeight: 800,
+              fontSize: 13,
+              textDecoration: 'none',
+              border: '1px solid #fca5a5',
+            }}
+          >
+            ⏰ Staff Member? Clock In / Clock Out Here →
+          </Link>
+        </div>
       </div>
     </div>
   );

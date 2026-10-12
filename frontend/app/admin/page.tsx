@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { adminApi, categoriesApi } from '@/lib/api';
+import { adminApi, categoriesApi, staffApi } from '@/lib/api';
 import { money } from '@/hooks/useCart';
 import { AdminCustomer, AnalyticsData, Category } from '@/types';
 
@@ -21,10 +21,42 @@ interface AdminProduct {
   is_negotiable: boolean;
   min_price?: number | null;
   max_price?: number | null;
+  discount_percentage?: number | null;
+  discounted_price?: number | null;
   category?: { id: number; name: string } | null;
   image?: string | null;
   description?: string;
   created_at: string;
+}
+
+interface StaffMember {
+  id: number;
+  first_name: string;
+  last_name: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  date_of_birth: string | null;
+  identity_type: string | null;
+  identity_number: string;
+  role: string;
+  is_active: boolean;
+  has_pin: boolean;
+  created_at: string;
+}
+
+interface AttendanceRecord {
+  id: number;
+  staff_id: number;
+  staff_name?: string;
+  staff_email?: string;
+  date: string;
+  clock_in: string | null;
+  clock_out: string | null;
+  status: string;
+  hours_worked: number | null;
+  notes: string | null;
 }
 
 interface AdminOrder {
@@ -49,8 +81,8 @@ export default function AdminPage() {
   const { user, token, loading, logout } = useAuth();
   const router = useRouter();
 
-  // Navigation tab: products | customers | analytics | orders
-  const [activeTab, setActiveTab] = useState<'products' | 'customers' | 'analytics' | 'orders'>('products');
+  // Navigation tab: products | customers | analytics | orders | staff
+  const [activeTab, setActiveTab] = useState<'products' | 'customers' | 'analytics' | 'orders' | 'staff'>('products');
 
   // Products state
   const [products, setProducts] = useState<AdminProduct[]>([]);
@@ -62,6 +94,29 @@ export default function AdminPage() {
   const [fetching, setFetching] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+
+  // Staff state
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [selectedStaffForAttendance, setSelectedStaffForAttendance] = useState<StaffMember | null>(null);
+  const [staffFormFirstName, setStaffFormFirstName] = useState('');
+  const [staffFormLastName, setStaffFormLastName] = useState('');
+  const [staffFormEmail, setStaffFormEmail] = useState('');
+  const [staffFormPhone, setStaffFormPhone] = useState('');
+  const [staffFormAddress, setStaffFormAddress] = useState('');
+  const [staffFormDob, setStaffFormDob] = useState('');
+  const [staffFormIdType, setStaffFormIdType] = useState('');
+  const [staffFormIdNumber, setStaffFormIdNumber] = useState('');
+  const [staffFormPin, setStaffFormPin] = useState('');
+  const [savingStaff, setSavingStaff] = useState(false);
+  const [staffAttendanceFilter, setStaffAttendanceFilter] = useState('');
+
+  // Discount state
+  const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const [discountProduct, setDiscountProduct] = useState<AdminProduct | null>(null);
+  const [discountValue, setDiscountValue] = useState('');
 
   // Filters
   const [search, setSearch] = useState('');
@@ -115,23 +170,159 @@ export default function AdminPage() {
     if (!token || user?.role !== 'admin') return;
     setFetching(true);
     try {
-      const [prods, cats, ords, custs, anly] = await Promise.all([
+      const [prods, cats, ords, custs, anly, staff] = await Promise.all([
         adminApi.products({ limit: 200 }, token) as Promise<AdminProduct[]>,
         categoriesApi.list() as Promise<Category[]>,
         adminApi.orders(token) as Promise<AdminOrder[]>,
         adminApi.customers({ limit: 100 }, token) as Promise<AdminCustomer[]>,
         adminApi.analytics(analyticsTimeframe, token) as Promise<AnalyticsData>,
+        staffApi.list(token) as Promise<StaffMember[]>,
       ]);
       setProducts(prods || []);
       setCategories(cats || []);
       setOrders(ords || []);
       setCustomers(custs || []);
       setAnalytics(anly || null);
+      setStaffList(staff || []);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
       setFetching(false);
     }
+  };
+
+  // Load all attendance records
+  const loadAttendance = async () => {
+    if (!token) return;
+    try {
+      const records = await staffApi.allAttendance({}, token) as AttendanceRecord[];
+      setAttendanceRecords(records || []);
+    } catch (err) {
+      console.error('Failed to load attendance:', err);
+    }
+  };
+
+  // Open discount modal
+  const openDiscountModal = (product: AdminProduct) => {
+    setDiscountProduct(product);
+    setDiscountValue(product.discount_percentage ? String(product.discount_percentage) : '');
+    setIsDiscountModalOpen(true);
+  };
+
+  // Save discount
+  const handleSaveDiscount = async () => {
+    if (!discountProduct || !token) return;
+    const disc = discountValue ? parseFloat(discountValue) : null;
+    if (disc !== null && (disc < 0 || disc > 100)) {
+      showToast('⚠️ Discount must be between 0 and 100%');
+      return;
+    }
+    try {
+      await adminApi.setDiscount(discountProduct.id, disc, token);
+      showToast(
+        disc
+          ? `🏷️ ${disc}% discount applied to "${discountProduct.name}"!`
+          : `ℹ️ Discount removed from "${discountProduct.name}".`
+      );
+      setIsDiscountModalOpen(false);
+      loadData();
+    } catch (err: any) {
+      showToast(`❌ Failed to set discount: ${err.message}`);
+    }
+  };
+
+  // Open staff modal
+  const openStaffModal = (staff?: StaffMember) => {
+    if (staff) {
+      setEditingStaff(staff);
+      setStaffFormFirstName(staff.first_name);
+      setStaffFormLastName(staff.last_name);
+      setStaffFormEmail(staff.email);
+      setStaffFormPhone(staff.phone || '');
+      setStaffFormAddress(staff.address || '');
+      setStaffFormDob(staff.date_of_birth || '');
+      setStaffFormIdType(staff.identity_type || '');
+      setStaffFormIdNumber(staff.identity_number || '');
+      setStaffFormPin('');
+    } else {
+      setEditingStaff(null);
+      setStaffFormFirstName('');
+      setStaffFormLastName('');
+      setStaffFormEmail('');
+      setStaffFormPhone('');
+      setStaffFormAddress('');
+      setStaffFormDob('');
+      setStaffFormIdType('');
+      setStaffFormIdNumber('');
+      setStaffFormPin('');
+    }
+    setIsStaffModalOpen(true);
+  };
+
+  // Save staff
+  const handleSaveStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    if (!staffFormFirstName.trim() || !staffFormLastName.trim() || !staffFormEmail.trim()) {
+      showToast('⚠️ Please fill in first name, last name, and email');
+      return;
+    }
+    if (!editingStaff && !staffFormPin) {
+      showToast('⚠️ Please set a PIN for this staff member (they will use it to clock in)');
+      return;
+    }
+    const payload: Record<string, any> = {
+      first_name: staffFormFirstName.trim(),
+      last_name: staffFormLastName.trim(),
+      email: staffFormEmail.trim(),
+      phone: staffFormPhone.trim() || null,
+      address: staffFormAddress.trim() || null,
+      date_of_birth: staffFormDob || null,
+      identity_type: staffFormIdType || null,
+      identity_number: staffFormIdNumber.trim() || null,
+    };
+    if (staffFormPin) payload.pin = staffFormPin;
+
+    setSavingStaff(true);
+    try {
+      if (editingStaff) {
+        await staffApi.update(editingStaff.id, payload, token);
+        showToast(`✅ ${payload.first_name} ${payload.last_name}'s profile updated!`);
+      } else {
+        await staffApi.create(payload, token);
+        showToast(`🎉 ${payload.first_name} ${payload.last_name} registered as staff!`);
+      }
+      setIsStaffModalOpen(false);
+      loadData();
+    } catch (err: any) {
+      showToast(`❌ Failed to save staff: ${err.message || 'Error occurred'}`);
+    } finally {
+      setSavingStaff(false);
+    }
+  };
+
+  // Delete staff
+  const handleDeleteStaff = async (staff: StaffMember) => {
+    if (!token) return;
+    if (!confirm(`Are you sure you want to remove ${staff.name} from staff?`)) return;
+    try {
+      await staffApi.delete(staff.id, token);
+      showToast(`🗑️ ${staff.name} removed from staff.`);
+      loadData();
+    } catch (err: any) {
+      showToast(`❌ Failed to remove staff: ${err.message}`);
+    }
+  };
+
+  // View staff attendance
+  const handleViewAttendance = async (staff: StaffMember) => {
+    setSelectedStaffForAttendance(staff);
+    await loadAttendance();
+  };
+
+  const formatTime = (isoString: string | null) => {
+    if (!isoString) return '—';
+    return new Date(isoString).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
   useEffect(() => {
@@ -518,7 +709,7 @@ export default function AdminPage() {
           className={`admin-tab-btn-pill ${activeTab === 'products' ? 'active' : ''}`}
           onClick={() => setActiveTab('products')}
         >
-          🏷️ Products & Price Am ({products.length})
+          🏷️ Products &amp; Price Am ({products.length})
         </button>
         <button
           className={`admin-tab-btn-pill ${activeTab === 'customers' ? 'active' : ''}`}
@@ -530,13 +721,19 @@ export default function AdminPage() {
           className={`admin-tab-btn-pill ${activeTab === 'analytics' ? 'active' : ''}`}
           onClick={() => setActiveTab('analytics')}
         >
-          📊 Analysis & Data
+          📊 Analysis &amp; Data
         </button>
         <button
           className={`admin-tab-btn-pill ${activeTab === 'orders' ? 'active' : ''}`}
           onClick={() => setActiveTab('orders')}
         >
           📦 Store Orders ({orders.length})
+        </button>
+        <button
+          className={`admin-tab-btn-pill ${activeTab === 'staff' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('staff'); loadAttendance(); }}
+        >
+          💼 Staff &amp; Attendance ({staffList.length})
         </button>
       </div>
 
@@ -631,8 +828,9 @@ export default function AdminPage() {
                   <tr>
                     <th>Product</th>
                     <th>Category</th>
-                    <th>Stock & Measured In</th>
+                    <th>Stock &amp; Measured In</th>
                     <th>Store Display Price</th>
+                    <th style={{ textAlign: 'center' }}>Discount</th>
                     <th style={{ textAlign: 'center' }}>Price Am (Mama Nkechi)</th>
                     <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
@@ -691,12 +889,51 @@ export default function AdminPage() {
                                 /{prod.unit}
                               </span>
                             )}
+                            {prod.discount_percentage && prod.discounted_price && (
+                              <div style={{ fontSize: 12, color: '#15803d', fontWeight: 700, marginTop: 2 }}>
+                                Sale: {money(prod.discounted_price)}
+                              </div>
+                            )}
                             {prod.is_negotiable && (
                               <div style={{ fontSize: 11, color: '#b45309', fontWeight: 700, marginTop: 2 }}>
                                 (Max / Initial display)
                               </div>
                             )}
                           </div>
+                        </td>
+
+                        {/* Discount Column */}
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => openDiscountModal(prod)}
+                            style={{
+                              display: 'inline-flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 3,
+                              padding: '6px 10px',
+                              borderRadius: 10,
+                              border: prod.discount_percentage ? '1.5px solid #16a34a' : '1.5px solid #e2e8f0',
+                              background: prod.discount_percentage ? '#dcfce7' : 'transparent',
+                              cursor: 'pointer',
+                              minWidth: 70,
+                            }}
+                          >
+                            {prod.discount_percentage ? (
+                              <>
+                                <span style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>
+                                  -{prod.discount_percentage}%
+                                </span>
+                                <span style={{ fontSize: 10, color: '#16a34a', fontWeight: 700 }}>SALE ON</span>
+                              </>
+                            ) : (
+                              <>
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>🏷️</span>
+                                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700 }}>Add Discount</span>
+                              </>
+                            )}
+                          </button>
                         </td>
 
                         {/* Price Am Switch & Min/Max */}
@@ -1789,6 +2026,326 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ══════════════════════════════════════════════════════════════
+          TAB 5: STAFF AND ATTENDANCE
+      ══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'staff' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h2 style={{ fontSize: 26, margin: 0, fontWeight: 900 }}>Staff Management</h2>
+              <p style={{ color: 'var(--muted)', margin: '4px 0 0', fontSize: 14 }}>Register staff, manage profiles, and view clock-in attendance records.</p>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Link href="/staff" target="_blank" className="secondary-button" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                Clock-In Terminal
+              </Link>
+              <button type="button" className="admin-action-btn-primary" onClick={() => openStaffModal()}>
+                Register New Staff
+              </button>
+            </div>
+          </div>
+
+          <div className="admin-stats-grid" style={{ marginBottom: 24 }}>
+            <div className="admin-stat-card">
+              <div className="stat-label">Total Staff</div>
+              <div className="stat-val">{staffList.length}</div>
+              <div className="stat-sub">{staffList.filter(s => s.is_active).length} active</div>
+            </div>
+            <div className="admin-stat-card highlight">
+              <div className="stat-label">Today&apos;s Check-ins</div>
+              <div className="stat-val" style={{ color: 'var(--green)' }}>
+                {attendanceRecords.filter(r => r.date === new Date().toISOString().split('T')[0]).length}
+              </div>
+              <div className="stat-sub">Clock-ins today</div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="stat-label">Has PIN Set</div>
+              <div className="stat-val">{staffList.filter(s => s.has_pin).length}</div>
+              <div className="stat-sub">Ready to clock in</div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="stat-label">Total Attendance</div>
+              <div className="stat-val">{attendanceRecords.length}</div>
+              <div className="stat-sub">All-time records</div>
+            </div>
+          </div>
+
+          {staffList.length === 0 ? (
+            <div className="empty-state">
+              <strong>No staff registered yet</strong>
+              <span>Click &ldquo;Register New Staff&rdquo; to add your first staff member.</span>
+            </div>
+          ) : (
+            <div className="admin-table-container" style={{ marginBottom: 36 }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Staff Member</th>
+                    <th>Contact</th>
+                    <th>Identity</th>
+                    <th>Date of Birth</th>
+                    <th style={{ textAlign: 'center' }}>PIN / Status</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {staffList.map(s => (
+                    <tr key={s.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg, #e31e24, #b91c1c)', color: '#fff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
+                            {s.first_name[0]}{s.last_name[0]}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: 15 }}>{s.name}</div>
+                            <div style={{ fontSize: 12, color: 'var(--muted)' }}>Registered {new Date(s.created_at).toLocaleDateString('en-NG')}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: 13 }}>{s.email}</div>
+                        <div style={{ fontSize: 13, color: 'var(--muted)' }}>{s.phone || 'No phone'}</div>
+                      </td>
+                      <td>
+                        {s.identity_type ? (
+                          <div>
+                            <span className="category-tag">{s.identity_type}</span>
+                            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3 }}>{s.identity_number || '—'}</div>
+                          </div>
+                        ) : <span style={{ color: 'var(--muted)', fontSize: 13 }}>Not provided</span>}
+                      </td>
+                      <td><span style={{ fontSize: 13 }}>{s.date_of_birth || '—'}</span></td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: s.has_pin ? '#dcfce7' : '#fef3c7', color: s.has_pin ? '#15803d' : '#92400e' }}>
+                            {s.has_pin ? 'PIN Set' : 'No PIN'}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: s.is_active ? '#eff6ff' : '#fef2f2', color: s.is_active ? '#1d4ed8' : '#b91c1c' }}>
+                            {s.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button type="button" className="secondary-button" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 999 }} onClick={() => handleViewAttendance(s)}>
+                            Attendance
+                          </button>
+                          <button type="button" className="secondary-button" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 999 }} onClick={() => openStaffModal(s)}>
+                            Edit
+                          </button>
+                          <button type="button" className="secondary-button" style={{ padding: '6px 10px', fontSize: 13, borderRadius: 999, color: 'var(--red)', borderColor: '#fca5a5' }} onClick={() => handleDeleteStaff(s)}>
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ fontSize: 20, margin: 0, fontWeight: 800 }}>
+                Attendance Log {selectedStaffForAttendance && <span style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600 }}>— {selectedStaffForAttendance.name}</span>}
+              </h3>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {selectedStaffForAttendance && (
+                  <button type="button" className="secondary-button" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => setSelectedStaffForAttendance(null)}>
+                    Show All
+                  </button>
+                )}
+                <input type="date" className="admin-form-input" style={{ padding: '6px 12px', fontSize: 13, width: 160 }} value={staffAttendanceFilter} onChange={e => setStaffAttendanceFilter(e.target.value)} />
+              </div>
+            </div>
+
+            {(() => {
+              const filtered = attendanceRecords.filter(r => {
+                if (selectedStaffForAttendance && r.staff_id !== selectedStaffForAttendance.id) return false;
+                if (staffAttendanceFilter && r.date !== staffAttendanceFilter) return false;
+                return true;
+              });
+              if (filtered.length === 0) return (
+                <div className="empty-state">
+                  <strong>No attendance records</strong>
+                  <span>No clock-in records match your current filter.</span>
+                </div>
+              );
+              return (
+                <div className="admin-table-container">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Staff Member</th>
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Hours Worked</th>
+                        <th style={{ textAlign: 'center' }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(r => (
+                        <tr key={r.id}>
+                          <td>
+                            <div style={{ fontWeight: 700 }}>{r.staff_name || `Staff #${r.staff_id}`}</div>
+                            <div style={{ fontSize: 12, color: 'var(--muted)' }}>{r.staff_email || ''}</div>
+                          </td>
+                          <td style={{ fontWeight: 700 }}>{r.date}</td>
+                          <td style={{ color: 'var(--green)', fontWeight: 700 }}>{formatTime(r.clock_in)}</td>
+                          <td style={{ color: r.clock_out ? 'var(--red)' : 'var(--muted)', fontWeight: 700 }}>{formatTime(r.clock_out)}</td>
+                          <td>{r.hours_worked != null ? <span style={{ fontWeight: 800 }}>{r.hours_worked}h</span> : <span style={{ color: 'var(--muted)', fontSize: 13 }}>In progress</span>}</td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: r.status === 'clocked_in' ? '#dcfce7' : '#f1f5f9', color: r.status === 'clocked_in' ? '#15803d' : '#64748b' }}>
+                              {r.status === 'clocked_in' ? 'Clocked In' : 'Clocked Out'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: DISCOUNT */}
+      {isDiscountModalOpen && discountProduct && (
+        <div className="admin-modal-backdrop" onClick={() => setIsDiscountModalOpen(false)}>
+          <div className="admin-modal-content" style={{ maxWidth: 440 }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h2 style={{ fontSize: 22, margin: 0 }}>Set Discount</h2>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: 14 }}>{discountProduct.name}</p>
+              </div>
+              <button type="button" className="admin-modal-close" onClick={() => setIsDiscountModalOpen(false)}>x</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ padding: 14, background: '#fafafa', borderRadius: 12, border: '1px solid #f1f1f1' }}>
+                <div style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 700, marginBottom: 4 }}>CURRENT PRICE</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--red)' }}>{money(discountProduct.price)}</div>
+                {discountValue && !isNaN(parseFloat(discountValue)) && parseFloat(discountValue) > 0 && (
+                  <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 4 }}>
+                    Sale price: {money(Math.round(discountProduct.price * (1 - parseFloat(discountValue) / 100)))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="admin-form-label">Discount Percentage (%)</label>
+                <input
+                  type="number" min="0" max="100" step="0.5"
+                  className="admin-form-input"
+                  placeholder="e.g. 10 for 10% off. Leave empty to remove discount."
+                  value={discountValue}
+                  onChange={e => setDiscountValue(e.target.value)}
+                />
+                <span style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6, display: 'block' }}>
+                  Enter 1–100. Leave empty to remove any existing discount.
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+                {discountProduct.discount_percentage && (
+                  <button type="button" className="secondary-button" style={{ color: 'var(--red)', borderColor: '#fca5a5', fontSize: 14 }} onClick={() => { setDiscountValue(''); setTimeout(handleSaveDiscount, 0); }}>
+                    Remove Discount
+                  </button>
+                )}
+                <button type="button" className="secondary-button" onClick={() => setIsDiscountModalOpen(false)}>Cancel</button>
+                <button type="button" className="admin-action-btn-primary" onClick={handleSaveDiscount}>Apply Discount</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: REGISTER / EDIT STAFF */}
+      {isStaffModalOpen && (
+        <div className="admin-modal-backdrop" onClick={() => setIsStaffModalOpen(false)}>
+          <div className="admin-modal-content" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h2 style={{ fontSize: 22, margin: 0 }}>{editingStaff ? 'Edit Staff Profile' : 'Register New Staff'}</h2>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: 14 }}>
+                  {editingStaff ? `Editing: ${editingStaff.name}` : 'Fill in details to register a new staff member'}
+                </p>
+              </div>
+              <button type="button" className="admin-modal-close" onClick={() => setIsStaffModalOpen(false)}>x</button>
+            </div>
+            <form onSubmit={handleSaveStaff} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="admin-form-label">First Name *</label>
+                  <input className="admin-form-input" value={staffFormFirstName} onChange={e => setStaffFormFirstName(e.target.value)} placeholder="e.g. Amaka" required />
+                </div>
+                <div>
+                  <label className="admin-form-label">Last Name *</label>
+                  <input className="admin-form-input" value={staffFormLastName} onChange={e => setStaffFormLastName(e.target.value)} placeholder="e.g. Okafor" required />
+                </div>
+              </div>
+              <div>
+                <label className="admin-form-label">Email Address *</label>
+                <input type="email" className="admin-form-input" value={staffFormEmail} onChange={e => setStaffFormEmail(e.target.value)} placeholder="amaka@buyam.com" required disabled={!!editingStaff} />
+                {editingStaff && <span style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, display: 'block' }}>Email cannot be changed after registration.</span>}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="admin-form-label">Phone Number</label>
+                  <input className="admin-form-input" value={staffFormPhone} onChange={e => setStaffFormPhone(e.target.value)} placeholder="+234 80 0000 0000" />
+                </div>
+                <div>
+                  <label className="admin-form-label">Date of Birth</label>
+                  <input type="date" className="admin-form-input" value={staffFormDob} onChange={e => setStaffFormDob(e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <label className="admin-form-label">Home Address</label>
+                <textarea className="admin-form-input" value={staffFormAddress} onChange={e => setStaffFormAddress(e.target.value)} placeholder="Full residential address" rows={2} style={{ resize: 'vertical' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="admin-form-label">Proof of Identity</label>
+                  <select className="admin-form-input" value={staffFormIdType} onChange={e => setStaffFormIdType(e.target.value)}>
+                    <option value="">Select type</option>
+                    <option value="Passport">International Passport</option>
+                    <option value="NIN">NIN (National ID Number)</option>
+                    <option value="Driver&apos;s License">Driver&apos;s License</option>
+                    <option value="Voter&apos;s Card">Voter&apos;s Card</option>
+                    <option value="National ID Card">National ID Card</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-form-label">ID Number</label>
+                  <input className="admin-form-input" value={staffFormIdNumber} onChange={e => setStaffFormIdNumber(e.target.value)} placeholder="Identity document number" />
+                </div>
+              </div>
+              <div style={{ background: '#fef9ec', padding: 14, borderRadius: 12, border: '1px solid #fde68a' }}>
+                <label className="admin-form-label" style={{ color: '#92400e' }}>
+                  Clock-In PIN {editingStaff ? '(leave blank to keep current)' : '*'}
+                </label>
+                <input
+                  type="password" inputMode="numeric" maxLength={4}
+                  className="admin-form-input"
+                  value={staffFormPin}
+                  onChange={e => setStaffFormPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="4-digit PIN"
+                />
+                <span style={{ fontSize: 12, color: '#92400e', marginTop: 4, display: 'block' }}>
+                  Staff will use this PIN on the clock-in terminal to record attendance.
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+                <button type="button" className="secondary-button" onClick={() => setIsStaffModalOpen(false)}>Cancel</button>
+                <button type="submit" className="admin-action-btn-primary" disabled={savingStaff}>
+                  {savingStaff ? 'Saving...' : editingStaff ? 'Update Staff Profile' : 'Register Staff Member'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

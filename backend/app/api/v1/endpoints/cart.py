@@ -85,11 +85,16 @@ def add_to_cart(body: CartItemAdd, current_user=Depends(get_current_user), db: S
             raise HTTPException(status_code=400, detail="Insufficient stock")
         existing.quantity = new_qty
     else:
+        effective_price = (
+            product.discounted_price
+            if product.discount_percentage and float(product.discount_percentage) > 0
+            else product.price
+        )
         item = CartItem(
             cart_id=cart.id,
             product_id=body.product_id,
             quantity=body.quantity,
-            unit_price=product.price,
+            unit_price=effective_price,
         )
         db.add(item)
 
