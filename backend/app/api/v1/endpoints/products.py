@@ -75,8 +75,31 @@ def list_products(
     if featured is not None:
         query = query.filter(Product.featured == featured)
 
-    total = query.count()
-    products = query.offset((page - 1) * limit).limit(limit).all()
+    try:
+        total = query.count()
+        products = query.offset((page - 1) * limit).limit(limit).all()
+    except Exception:
+        db.rollback()
+        try:
+            from app.core.init_db import init_db
+            init_db()
+            query = product_query(db).filter(Product.status == ProductStatus.active)
+            if q:
+                search = f"%{q}%"
+                query = query.filter(or_(Product.name.ilike(search), Product.description.ilike(search)))
+            if category:
+                query = query.join(Category).filter(or_(Category.slug.ilike(category), Category.name.ilike(category)))
+            if min_price is not None:
+                query = query.filter(Product.price >= min_price)
+            if max_price is not None:
+                query = query.filter(Product.price <= max_price)
+            if featured is not None:
+                query = query.filter(Product.featured == featured)
+            total = query.count()
+            products = query.offset((page - 1) * limit).limit(limit).all()
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Database query error: {str(e)}")
 
     return {
         "items": [ProductListItem.model_validate(p) for p in products],

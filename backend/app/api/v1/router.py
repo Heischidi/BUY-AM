@@ -11,6 +11,15 @@ from app.api.v1.endpoints.admin import router as admin_router
 
 api_router = APIRouter(prefix="/api")
 
+@api_router.get("/health")
+def api_health():
+    return {"status": "ok", "service": "Buy Am API"}
+
+@api_router.get("/setup-db")
+def api_setup_db():
+    from app.core.init_db import init_db
+    return {"status": "ok", "report": init_db()}
+
 api_router.include_router(auth_router)
 api_router.include_router(products_router)
 api_router.include_router(categories_router)

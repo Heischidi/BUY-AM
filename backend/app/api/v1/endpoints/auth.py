@@ -53,22 +53,61 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
             detail="Username or email is required",
         )
 
-    # Search for user by username, email, or full name (case-insensitive)
-    user = (
-        db.query(User)
-        .filter(
-            or_(
-                func.lower(User.username) == identifier.lower(),
-                func.lower(User.email) == identifier.lower(),
-                func.lower(User.first_name + " " + User.last_name) == identifier.lower(),
-            )
-        )
-        .first()
-    )
+    norm_id = identifier.lower()
 
-    # If Mama Nkechi is used as username and not matched above, fallback to admin user
-    if not user and identifier.lower() in ["mama nkechi", "mamankechi", "mamanckechi"]:
-        user = db.query(User).filter(User.role == "admin").first()
+    def find_user():
+        # 1. Try finding by email
+        u = db.query(User).filter(func.lower(User.email) == norm_id).first()
+        if u:
+            return u
+
+        # 2. Try finding by username
+        try:
+            u = db.query(User).filter(func.lower(User.username) == norm_id).first()
+            if u:
+                return u
+        except Exception:
+            db.rollback()
+
+        # 3. Check for Mama Nkechi alias
+        if norm_id in ["mama nkechi", "mamankechi", "mamanckechi"]:
+            try:
+                u = db.query(User).filter(User.role == "admin").first()
+                if not u:
+                    from app.models.user import UserRole
+                    u = db.query(User).filter(User.role == UserRole.admin).first()
+                if u:
+                    return u
+            except Exception:
+                db.rollback()
+
+        # 4. Try matching full name
+        try:
+            u = db.query(User).filter(
+                func.lower(func.concat(User.first_name, " ", User.last_name)) == norm_id
+            ).first()
+            if u:
+                return u
+        except Exception:
+            db.rollback()
+
+        return None
+
+    try:
+        user = find_user()
+    except Exception as query_err:
+        # Self-heal schema if missing column caused failure
+        db.rollback()
+        try:
+            from app.core.init_db import init_db
+            init_db()
+            user = find_user()
+        except Exception:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Database query error during login: {str(query_err)}",
+            )
 
     if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
