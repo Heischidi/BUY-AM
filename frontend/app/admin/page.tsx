@@ -149,6 +149,8 @@ export default function AdminPage() {
   const [prodFormPrice, setProdFormPrice] = useState('');
   const [prodFormMinPrice, setProdFormMinPrice] = useState('');
   const [prodFormMaxPrice, setProdFormMaxPrice] = useState('');
+  const [prodFormHasDiscount, setProdFormHasDiscount] = useState(false);
+  const [prodFormDiscount, setProdFormDiscount] = useState('');
   const [savingProduct, setSavingProduct] = useState(false);
 
   // Authentication check
@@ -362,6 +364,8 @@ export default function AdminPage() {
       setProdFormPrice(String(product.price));
       setProdFormMinPrice(product.min_price ? String(product.min_price) : '');
       setProdFormMaxPrice(product.max_price ? String(product.max_price) : String(product.price));
+      setProdFormHasDiscount(Boolean(product.discount_percentage && product.discount_percentage > 0));
+      setProdFormDiscount(product.discount_percentage ? String(product.discount_percentage) : '');
     } else {
       setEditingProduct(null);
       setProdFormName('');
@@ -376,6 +380,8 @@ export default function AdminPage() {
       setProdFormPrice('15000');
       setProdFormMinPrice('12000');
       setProdFormMaxPrice('15000');
+      setProdFormHasDiscount(false);
+      setProdFormDiscount('');
     }
     setIsProductModalOpen(true);
   };
@@ -423,6 +429,16 @@ export default function AdminPage() {
       finalPrice = maxP; // Storefront price is set to maximum!
     }
 
+    let discountNum: number | null = null;
+    if (prodFormHasDiscount && prodFormDiscount) {
+      const parsed = parseFloat(prodFormDiscount);
+      if (isNaN(parsed) || parsed <= 0 || parsed > 100) {
+        showToast('⚠️ Discount percentage must be between 0.5% and 100%');
+        return;
+      }
+      discountNum = parsed;
+    }
+
     const payload = {
       name: prodFormName.trim(),
       category_id: prodFormCategory ? Number(prodFormCategory) : null,
@@ -435,6 +451,7 @@ export default function AdminPage() {
       max_price: prodFormIsNegotiable ? maxP : null,
       image_url: prodFormImage.trim() || null,
       featured: prodFormFeatured,
+      discount_percentage: discountNum,
     };
 
     setSavingProduct(true);
@@ -1787,6 +1804,129 @@ export default function AdminPage() {
                     <span style={{ fontSize: 12, color: '#92400e', marginTop: 4, display: 'block' }}>
                       Fixed price checkout with no AI bargaining.
                     </span>
+                  </div>
+                )}
+              </div>
+
+              {/* ═══════════ DISCOUNT FEATURE SECTION ═══════════ */}
+              <div style={{
+                marginTop: 16,
+                marginBottom: 16,
+                padding: 16,
+                borderRadius: 16,
+                background: prodFormHasDiscount ? '#fff1f2' : '#f8fafc',
+                border: prodFormHasDiscount ? '1.5px solid #fda4af' : '1px solid #e2e8f0',
+                transition: 'all 0.2s ease',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <div>
+                    <strong style={{ fontSize: 15, color: prodFormHasDiscount ? '#be123c' : '#334155', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      🏷️ Add Product Discount (% Off)
+                    </strong>
+                    <span style={{ fontSize: 13, color: prodFormHasDiscount ? '#9f1239' : '#64748b' }}>
+                      Set a promotional discount percentage for this product
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`toggle-switch-btn ${prodFormHasDiscount ? 'on' : 'off'}`}
+                    onClick={() => {
+                      const next = !prodFormHasDiscount;
+                      setProdFormHasDiscount(next);
+                      if (!next) setProdFormDiscount('');
+                      else if (!prodFormDiscount) setProdFormDiscount('10');
+                    }}
+                  >
+                    <span className="toggle-slider" />
+                    <span className="toggle-label">{prodFormHasDiscount ? 'YES' : 'NO'}</span>
+                  </button>
+                </div>
+
+                {prodFormHasDiscount && (
+                  <div style={{ marginTop: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
+                      <div>
+                        <label className="admin-form-label" style={{ color: '#be123c' }}>
+                          How much discount in percentage? (%) *
+                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="number"
+                            min="0.5"
+                            max="100"
+                            step="0.5"
+                            required={prodFormHasDiscount}
+                            placeholder="e.g. 10 for 10% off"
+                            className="admin-form-input"
+                            style={{ borderColor: '#fda4af', background: '#fff', fontWeight: 700 }}
+                            value={prodFormDiscount}
+                            onChange={e => setProdFormDiscount(e.target.value)}
+                          />
+                          <span style={{ fontSize: 16, fontWeight: 800, color: '#be123c' }}>%</span>
+                        </div>
+                        {/* Quick preset discount buttons */}
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                          {[5, 10, 15, 20, 25, 50].map(pct => (
+                            <button
+                              key={pct}
+                              type="button"
+                              onClick={() => setProdFormDiscount(String(pct))}
+                              style={{
+                                padding: '3px 8px',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                borderRadius: 6,
+                                background: prodFormDiscount === String(pct) ? '#be123c' : '#fff',
+                                color: prodFormDiscount === String(pct) ? '#fff' : '#be123c',
+                                border: '1px solid #fda4af',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {pct}%
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Live Price Calculator */}
+                      <div style={{
+                        padding: 12,
+                        background: '#ffffff',
+                        borderRadius: 12,
+                        border: '1px solid #fecdd3',
+                      }}>
+                        <div style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase' }}>
+                          Live Price Preview
+                        </div>
+                        {(() => {
+                          const base = prodFormIsNegotiable
+                            ? (parseFloat(prodFormMaxPrice) || 0)
+                            : (parseFloat(prodFormPrice) || 0);
+                          const pct = parseFloat(prodFormDiscount) || 0;
+                          const salePrice = pct > 0 ? Math.round(base * (1 - pct / 100)) : base;
+                          return (
+                            <div style={{ marginTop: 4 }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                                <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--red)' }}>
+                                  {money(salePrice)}
+                                </span>
+                                {pct > 0 && (
+                                  <span style={{ fontSize: 13, textDecoration: 'line-through', color: 'var(--muted)', fontWeight: 600 }}>
+                                    {money(base)}
+                                  </span>
+                                )}
+                              </div>
+                              {pct > 0 && (
+                                <div style={{ fontSize: 12, color: '#15803d', fontWeight: 700, marginTop: 4 }}>
+                                  🎉 Customers save {money(base - salePrice)} ({pct}% off)
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
