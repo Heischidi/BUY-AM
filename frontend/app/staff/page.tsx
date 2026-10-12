@@ -702,6 +702,62 @@ export default function StaffClockInPage() {
           margin: 0;
         }
         .staff-pin-mode { display: flex; flex-direction: column; }
+
+        @media (max-width: 520px) {
+          .staff-clock-container {
+            padding: 16px 12px 32px;
+            gap: 16px;
+          }
+          .staff-clock-card {
+            padding: 24px 16px;
+            border-radius: 20px;
+          }
+          .staff-time-display {
+            font-size: clamp(34px, 12vw, 54px);
+          }
+          .staff-h1 {
+            font-size: 22px;
+          }
+          .staff-h2 {
+            font-size: 20px;
+          }
+          .staff-pin-inputs {
+            gap: 8px;
+          }
+          .staff-pin-input {
+            width: 52px;
+            height: 60px;
+            font-size: 26px;
+            border-radius: 12px;
+          }
+          .staff-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+          }
+          .staff-member-btn {
+            padding: 12px 8px;
+          }
+          .staff-avatar {
+            width: 44px;
+            height: 44px;
+            font-size: 16px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .staff-pin-inputs {
+            gap: 6px;
+          }
+          .staff-pin-input {
+            width: 44px;
+            height: 52px;
+            font-size: 22px;
+            border-radius: 10px;
+          }
+          .staff-clock-card {
+            padding: 18px 12px;
+          }
+        }
       `}</style>
     </div>
   );

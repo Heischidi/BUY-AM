@@ -1647,7 +1647,7 @@ export default function AdminPage() {
               </div>
 
               {/* Amount Available & Unit of Measurement */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div className="admin-grid-2col">
                 <div className="admin-form-group">
                   <label className="admin-form-label">Amount Available (Stock) *</label>
                   <input
@@ -1742,7 +1742,7 @@ export default function AdminPage() {
 
                 {prodFormIsNegotiable ? (
                   <div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 14 }}>
+                    <div className="admin-grid-2col" style={{ marginTop: 14 }}>
                       <div>
                         <label className="admin-form-label" style={{ color: '#78350f' }}>
                           Minimum Amount (₦) *
@@ -1845,7 +1845,7 @@ export default function AdminPage() {
 
                 {prodFormHasDiscount && (
                   <div style={{ marginTop: 14 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
+                    <div className="admin-grid-2col" style={{ alignItems: 'start' }}>
                       <div>
                         <label className="admin-form-label" style={{ color: '#be123c' }}>
                           How much discount in percentage? (%) *
@@ -1977,7 +1977,7 @@ export default function AdminPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(37, 28, 24, 0.08)' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(37, 28, 24, 0.08)' }}>
                 <button
                   type="button"
                   className="secondary-button"
@@ -2179,7 +2179,7 @@ export default function AdminPage() {
               <h2 style={{ fontSize: 26, margin: 0, fontWeight: 900 }}>Staff Management</h2>
               <p style={{ color: 'var(--muted)', margin: '4px 0 0', fontSize: 14 }}>Register staff, manage profiles, and view clock-in attendance records.</p>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <Link href="/staff" target="_blank" className="secondary-button" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
                 Clock-In Terminal
               </Link>
@@ -2290,11 +2290,11 @@ export default function AdminPage() {
           )}
 
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
               <h3 style={{ fontSize: 20, margin: 0, fontWeight: 800 }}>
                 Attendance Log {selectedStaffForAttendance && <span style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600 }}>— {selectedStaffForAttendance.name}</span>}
               </h3>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {selectedStaffForAttendance && (
                   <button type="button" className="secondary-button" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => setSelectedStaffForAttendance(null)}>
                     Show All
@@ -2390,7 +2390,7 @@ export default function AdminPage() {
                   Enter 1–100. Leave empty to remove any existing discount.
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: 8 }}>
                 {discountProduct.discount_percentage && (
                   <button type="button" className="secondary-button" style={{ color: 'var(--red)', borderColor: '#fca5a5', fontSize: 14 }} onClick={() => { setDiscountValue(''); setTimeout(handleSaveDiscount, 0); }}>
                     Remove Discount
@@ -2418,7 +2418,7 @@ export default function AdminPage() {
               <button type="button" className="admin-modal-close" onClick={() => setIsStaffModalOpen(false)}>x</button>
             </div>
             <form onSubmit={handleSaveStaff} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="admin-grid-2col" style={{ gap: 12 }}>
                 <div>
                   <label className="admin-form-label">First Name *</label>
                   <input className="admin-form-input" value={staffFormFirstName} onChange={e => setStaffFormFirstName(e.target.value)} placeholder="e.g. Amaka" required />
@@ -2433,7 +2433,7 @@ export default function AdminPage() {
                 <input type="email" className="admin-form-input" value={staffFormEmail} onChange={e => setStaffFormEmail(e.target.value)} placeholder="amaka@buyam.com" required disabled={!!editingStaff} />
                 {editingStaff && <span style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, display: 'block' }}>Email cannot be changed after registration.</span>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="admin-grid-2col" style={{ gap: 12 }}>
                 <div>
                   <label className="admin-form-label">Phone Number</label>
                   <input className="admin-form-input" value={staffFormPhone} onChange={e => setStaffFormPhone(e.target.value)} placeholder="+234 80 0000 0000" />
@@ -2447,10 +2447,10 @@ export default function AdminPage() {
                 <label className="admin-form-label">Home Address</label>
                 <textarea className="admin-form-input" value={staffFormAddress} onChange={e => setStaffFormAddress(e.target.value)} placeholder="Full residential address" rows={2} style={{ resize: 'vertical' }} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="admin-grid-2col" style={{ gap: 12 }}>
                 <div>
                   <label className="admin-form-label">Proof of Identity</label>
-                  <select className="admin-form-input" value={staffFormIdType} onChange={e => setStaffFormIdType(e.target.value)}>
+                  <select className="admin-form-select" value={staffFormIdType} onChange={e => setStaffFormIdType(e.target.value)}>
                     <option value="">Select type</option>
                     <option value="Passport">International Passport</option>
                     <option value="NIN">NIN (National ID Number)</option>
@@ -2479,7 +2479,7 @@ export default function AdminPage() {
                   Staff will use this PIN on the clock-in terminal to record attendance.
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: 8 }}>
                 <button type="button" className="secondary-button" onClick={() => setIsStaffModalOpen(false)}>Cancel</button>
                 <button type="submit" className="admin-action-btn-primary" disabled={savingStaff}>
                   {savingStaff ? 'Saving...' : editingStaff ? 'Update Staff Profile' : 'Register Staff Member'}

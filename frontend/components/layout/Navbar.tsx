@@ -131,6 +131,7 @@ export default function Navbar() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Link
                 href="/staff"
+                className="nav-staff-link"
                 style={{
                   padding: '8px 14px',
                   borderRadius: '999px',
@@ -139,10 +140,14 @@ export default function Navbar() {
                   fontSize: '13px',
                   color: 'var(--text)',
                   whiteSpace: 'nowrap',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}
                 title="Staff Clock-In Terminal"
               >
-                ⏰ Staff Clock-In
+                <span>⏰</span>
+                <span className="nav-staff-label-full">Staff Clock-In</span>
               </Link>
               <Link
                 href="/auth/login"
