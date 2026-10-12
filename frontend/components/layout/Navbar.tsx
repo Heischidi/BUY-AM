@@ -55,43 +55,63 @@ export default function Navbar() {
         <div className="nav-actions" ref={actionsRef}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {user.role === 'admin' && (
+              {user.role === 'admin' ? (
+                <>
+                  <Link
+                    href="/admin"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      borderRadius: '999px',
+                      background: '#fee2e2',
+                      color: 'var(--red)',
+                      fontWeight: 800,
+                      fontSize: '13px',
+                      whiteSpace: 'nowrap',
+                    }}
+                    title="Admin Portal - Manage Products, Customers & Analytics"
+                  >
+                    👑 Admin Portal
+                  </Link>
+                  <Link
+                    href="/"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 14px',
+                      borderRadius: '999px',
+                      background: 'var(--white)',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      whiteSpace: 'nowrap',
+                    }}
+                    title="Visit Live Market Page"
+                  >
+                    🛒 Market Page
+                  </Link>
+                </>
+              ) : (
                 <Link
-                  href="/admin"
+                  href="/account"
+                  className="nav-user-pill"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    padding: '8px 12px',
+                    gap: '6px',
+                    padding: '8px 14px',
                     borderRadius: '999px',
-                    background: '#fee2e2',
-                    color: 'var(--red)',
-                    fontWeight: 800,
-                    fontSize: '13px',
+                    background: 'var(--white)',
+                    fontWeight: 700,
+                    fontSize: '14px',
                     whiteSpace: 'nowrap',
                   }}
-                  title="Admin Portal - Manage Products & Price Am"
                 >
-                  👑 Admin
+                  👤 {user.first_name}
                 </Link>
               )}
-              <Link
-                href="/account"
-                className="nav-user-pill"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 14px',
-                  borderRadius: '999px',
-                  background: 'var(--white)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                👤 {user.first_name}
-              </Link>
               <button
                 onClick={logout}
                 className="nav-logout-btn"
@@ -122,19 +142,23 @@ export default function Navbar() {
             </Link>
           )}
 
-          <button
-            className="icon-button"
-            onClick={() => router.push('/account#wishlist')}
-            aria-label="Wishlist"
-          >
-            ♡
-            <span className="count">{wishlistCount}</span>
-          </button>
+          {user?.role !== 'admin' && (
+            <>
+              <button
+                className="icon-button"
+                onClick={() => router.push('/account#wishlist')}
+                aria-label="Wishlist"
+              >
+                ♡
+                <span className="count">{wishlistCount}</span>
+              </button>
 
-          <button className="icon-button" onClick={openCart} aria-label="Shopping cart">
-            🛒
-            <span className="count cart-icon-badge">{itemCount}</span>
-          </button>
+              <button className="icon-button" onClick={openCart} aria-label="Shopping cart">
+                🛒
+                <span className="count cart-icon-badge">{itemCount}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

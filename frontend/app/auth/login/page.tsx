@@ -23,8 +23,12 @@ function LoginContent() {
     setError('');
     
     try {
-      await login(username, password);
-      router.push(redirect);
+      const data = await login(username, password);
+      if (data && 'user' in data && data.user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push(redirect);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to login');
     } finally {

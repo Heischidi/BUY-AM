@@ -46,7 +46,7 @@ const SAMPLE_PRESET_IMAGES = [
 ];
 
 export default function AdminPage() {
-  const { user, token, loading } = useAuth();
+  const { user, token, loading, logout } = useAuth();
   const router = useRouter();
 
   // Navigation tab: products | customers | analytics | orders
@@ -447,9 +447,39 @@ export default function AdminPage() {
           >
             <span style={{ fontSize: 18 }}>➕</span> Upload New Product
           </button>
-          <Link href="/" className="secondary-button" style={{ padding: '11px 20px', fontSize: 14 }}>
-            🏪 Storefront
+          <Link
+            href="/"
+            className="secondary-button"
+            style={{
+              padding: '11px 20px',
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontWeight: 700,
+            }}
+          >
+            🛒 Market Page
           </Link>
+          <button
+            type="button"
+            className="secondary-button"
+            style={{
+              padding: '11px 18px',
+              fontSize: 14,
+              fontWeight: 700,
+              color: 'var(--red)',
+              background: '#fee2e2',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              logout();
+              router.push('/auth/login');
+            }}
+          >
+            🚪 Sign Out
+          </button>
         </div>
       </div>
 

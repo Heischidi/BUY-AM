@@ -29,13 +29,17 @@ export default function Account() {
   });
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login?redirect=/account');
+    if (!loading) {
+      if (!user) {
+        router.push('/auth/login?redirect=/account');
+      } else if (user.role === 'admin') {
+        router.replace('/admin');
+      }
     }
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user) {
+    if (user && user.role !== 'admin') {
       setProfileForm({
         first_name: user.first_name,
         last_name: user.last_name,
@@ -45,7 +49,7 @@ export default function Account() {
   }, [user]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || user?.role === 'admin') return;
 
     if (activeTab === 'orders') {
       ordersApi.list(token).then(res => setOrders(res as Order[]));
@@ -56,9 +60,9 @@ export default function Account() {
       Promise.all(Array.from(wishlistIds).map(id => productsApi.get(id.toString())))
         .then(res => setWishlistProducts(res.filter(Boolean) as Product[]));
     }
-  }, [activeTab, token, wishlistIds]);
+  }, [activeTab, token, wishlistIds, user]);
 
-  if (loading || !user) return null;
+  if (loading || !user || user.role === 'admin') return null;
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,15 +112,6 @@ export default function Account() {
           >
             <span>👤</span> Profile Settings
           </button>
-          {user.role === 'admin' && (
-            <Link 
-              href="/admin" 
-              className="account-nav-btn"
-              style={{ background: '#fee2e2', color: 'var(--red)', fontWeight: 800, marginTop: 12 }}
-            >
-              <span>👑</span> Admin Portal (Price Am)
-            </Link>
-          )}
         </div>
 
         {/* Content Area */}
