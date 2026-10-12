@@ -9,6 +9,9 @@ interface BargainProduct {
   id: number;
   name: string;
   price: number;
+  min_price?: number;
+  max_price?: number;
+  unit?: string;
 }
 
 const DEFAULT_SUGGESTIONS = [
@@ -50,9 +53,10 @@ export default function ChatAssistant() {
       setBargainProduct(prod);
 
       const priceFormatted = Number(prod.price).toLocaleString();
+      const unitNotice = prod.unit && prod.unit !== 'quantity' ? ` per ${prod.unit}` : '';
       const bargainGreeting: ChatMessage = {
         role: 'assistant',
-        content: `Nne how much you get? 😂\n\nI dey listen! Tell me wetin you fit pay for ${prod.name} (Original price: ₦${priceFormatted}). Oya, drop your price make we talk! 💃🏾`,
+        content: `Nne how much you get? 😂\n\nI dey listen! Tell me wetin you fit pay for ${prod.name} (Store price: ₦${priceFormatted}${unitNotice}). Oya, drop your price make we talk! 💃🏾`,
       };
 
       setMessages(prev => [...prev, bargainGreeting]);
@@ -72,8 +76,10 @@ export default function ChatAssistant() {
     setLoading(true);
 
     // If bargaining for a product, provide context to the backend AI
+    const unitPart = bargainProduct?.unit && bargainProduct.unit !== 'quantity' ? ` per ${bargainProduct.unit}` : '';
+    const minPart = bargainProduct?.min_price ? `, Min floor price: ₦${bargainProduct.min_price}` : '';
     const messageForAi = bargainProduct
-      ? `[Customer is pricing product: "${bargainProduct.name}" (Original price: ₦${bargainProduct.price})]: ${text}`
+      ? `[Customer is pricing product: "${bargainProduct.name}" (Storefront price: ₦${bargainProduct.price}${unitPart}${minPart})]: ${text}`
       : text;
 
     try {

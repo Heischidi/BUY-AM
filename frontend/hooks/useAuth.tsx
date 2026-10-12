@@ -8,7 +8,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<TokenResponse | void>;
+  login: (usernameOrEmail: string, password: string) => Promise<TokenResponse | void>;
   register: (data: RegisterData) => Promise<TokenResponse | void>;
   logout: () => void;
 }
@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('buyam_user', JSON.stringify(data.user));
   };
 
-  const login = async (email: string, password: string) => {
-    const data = await authApi.login(email, password) as TokenResponse;
+  const login = async (usernameOrEmail: string, password: string) => {
+    const data = await authApi.login(usernameOrEmail, password) as TokenResponse;
     persist(data);
     return data;
   };

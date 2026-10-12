@@ -164,16 +164,17 @@ def seed():
         admin = db.query(User).filter(User.email == "admin@buyam.com").first()
         if not admin:
             admin = User(
-                first_name="Buy Am",
-                last_name="Admin",
+                first_name="Mama",
+                last_name="Nkechi",
+                username="Mama Nkechi",
                 email="admin@buyam.com",
-                password_hash=hash_password("Admin@123"),
+                password_hash=hash_password("mamankechi123%"),
                 role=UserRole.admin,
                 is_verified=True,
             )
             db.add(admin)
             db.flush()
-            print("✅ Admin user created: admin@buyam.com / Admin@123")
+            print("✅ Admin user created: Mama Nkechi / mamankechi123%")
 
         # ── Demo seller ───────────────────────────────────────────────
         demo_user = db.query(User).filter(User.email == "seller@buyam.com").first()
@@ -250,7 +251,7 @@ def seed():
         db.commit()
         print("\n✅ Database seeded successfully!")
         print("\nLogin credentials:")
-        print("  Admin: admin@buyam.com / Admin@123")
+        print("  Admin: Username: 'Mama Nkechi' (or admin@buyam.com) / Password: 'mamankechi123%'")
         print("  Seller: seller@buyam.com / Seller@123")
 
     except Exception as e:

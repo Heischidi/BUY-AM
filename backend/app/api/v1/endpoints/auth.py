@@ -12,6 +12,9 @@ from app.schemas.user import UserCreate, UserLogin, TokenResponse, RefreshTokenR
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+from sqlalchemy import or_, func
+
+
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == user_data.email).first()
@@ -21,8 +24,10 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     user = User(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
+        username=user_data.username,
         email=user_data.email,
         phone=user_data.phone,
+        gender=user_data.gender,
         password_hash=hash_password(user_data.password),
     )
     db.add(user)
@@ -41,11 +46,34 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == credentials.email).first()
+    identifier = (credentials.username or credentials.email or "").strip()
+    if not identifier:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email is required",
+        )
+
+    # Search for user by username, email, or full name (case-insensitive)
+    user = (
+        db.query(User)
+        .filter(
+            or_(
+                func.lower(User.username) == identifier.lower(),
+                func.lower(User.email) == identifier.lower(),
+                func.lower(User.first_name + " " + User.last_name) == identifier.lower(),
+            )
+        )
+        .first()
+    )
+
+    # If Mama Nkechi is used as username and not matched above, fallback to admin user
+    if not user and identifier.lower() in ["mama nkechi", "mamankechi", "mamanckechi"]:
+        user = db.query(User).filter(User.role == "admin").first()
+
     if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid username or password",
         )
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Account is deactivated")

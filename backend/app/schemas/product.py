@@ -37,6 +37,9 @@ class ProductListItem(BaseModel):
     status: str
     featured: bool
     is_negotiable: bool = False
+    unit: Optional[str] = "quantity"
+    min_price: Optional[Decimal] = None
+    max_price: Optional[Decimal] = None
     category: Optional[CategoryResponse] = None
     images: List[ProductImageResponse] = []
     created_at: datetime
@@ -65,6 +68,9 @@ class ProductCreate(BaseModel):
     status: str = "active"
     featured: bool = False
     is_negotiable: bool = False
+    unit: Optional[str] = "quantity"
+    min_price: Optional[Decimal] = None
+    max_price: Optional[Decimal] = None
     image_url: Optional[str] = None
 
 
@@ -79,6 +85,9 @@ class ProductUpdate(BaseModel):
     status: Optional[str] = None
     featured: Optional[bool] = None
     is_negotiable: Optional[bool] = None
+    unit: Optional[str] = None
+    min_price: Optional[Decimal] = None
+    max_price: Optional[Decimal] = None
 
 
 class ProductSearchParams(BaseModel):

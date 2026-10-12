@@ -129,6 +129,10 @@ def create_product(
     image_url = body.image_url
     body_dict = body.model_dump(exclude={"image_url"})
 
+    # If Price Am (negotiable) is enabled and max_price is provided, set storefront price to max_price
+    if body_dict.get("is_negotiable") and body_dict.get("max_price"):
+        body_dict["price"] = body_dict["max_price"]
+
     slug = make_unique_slug(db, body.name)
     product = Product(slug=slug, **body_dict)
     db.add(product)
@@ -156,6 +160,12 @@ def update_product(
     update_data = body.model_dump(exclude_unset=True)
     if "name" in update_data:
         update_data["slug"] = make_unique_slug(db, update_data["name"], exclude_id=product_id)
+
+    # If is_negotiable is active and max_price is provided, ensure storefront price is max_price
+    is_neg = update_data.get("is_negotiable", product.is_negotiable)
+    max_p = update_data.get("max_price", product.max_price)
+    if is_neg and max_p:
+        update_data["price"] = max_p
 
     for field, value in update_data.items():
         setattr(product, field, value)

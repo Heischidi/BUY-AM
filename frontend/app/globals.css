@@ -1924,6 +1924,7 @@ footer a {
   .admin-header-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 16px;
   }
   .admin-stats-grid {
     grid-template-columns: 1fr 1fr;
@@ -1933,4 +1934,496 @@ footer a {
     max-width: 100%;
   }
 }
+
+/* ─── Admin Enhanced Design System ────────────────────────────── */
+
+.admin-action-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--red);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(227, 30, 36, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-action-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(227, 30, 36, 0.4);
+}
+
+.admin-action-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Navigation Tabs */
+.admin-tab-btn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--muted);
+  background: var(--white);
+  border: 1.5px solid rgba(37, 28, 24, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.admin-tab-btn-pill:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.admin-tab-btn-pill.active {
+  background: var(--ink);
+  color: #ffffff;
+  border-color: var(--ink);
+  box-shadow: 0 4px 12px rgba(37, 28, 24, 0.2);
+}
+
+/* Unit Badge */
+.unit-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.unit-badge.yard {
+  background: #fdf4ff;
+  color: #a21caf;
+  border-color: #f5d0fe;
+}
+
+.unit-badge.kg {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.unit-badge.quantity {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+/* Price Am Pill Indicator */
+.price-am-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  animation: gentlePulse 2.5s infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); box-shadow: 0 0 10px rgba(245, 158, 11, 0.25); }
+}
+
+/* Modal Overlay & Card */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(37, 28, 24, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.admin-modal-content {
+  background: #ffffff;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  padding: 32px;
+  position: relative;
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(37, 28, 24, 0.08);
+  padding-bottom: 16px;
+}
+
+.admin-modal-close {
+  background: #f1f5f9;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  transition: all 0.2s;
+}
+
+.admin-modal-close:hover {
+  background: #e2e8f0;
+  color: var(--ink);
+}
+
+/* Form Styles */
+.admin-form-group {
+  margin-bottom: 20px;
+}
+
+.admin-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.admin-form-input, .admin-form-select, .admin-form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 2px solid rgba(37, 28, 24, 0.1);
+  background: #fafaf9;
+  font-size: 15px;
+  color: var(--ink);
+  transition: all 0.2s;
+}
+
+.admin-form-input:focus, .admin-form-select:focus, .admin-form-textarea:focus {
+  outline: none;
+  border-color: var(--red);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(227, 30, 36, 0.1);
+}
+
+/* Unit selector pill buttons */
+.unit-selector-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.unit-select-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(37, 28, 24, 0.15);
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--ink);
+}
+
+.unit-select-btn:hover {
+  border-color: var(--ink);
+}
+
+.unit-select-btn.active {
+  background: var(--ink);
+  color: #ffffff;
+  border-color: var(--ink);
+}
+
+/* Price Am Feature Box inside Modal */
+.price-am-box {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #fcd34d;
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.price-am-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.price-am-indicator-notice {
+  background: #ffffff;
+  border: 1.5px dashed #f59e0b;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #92400e;
+  margin-top: 14px;
+  line-height: 1.4;
+}
+
+/* Customers page styles */
+.gender-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.gender-badge.female {
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
+}
+
+.gender-badge.male {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.gender-badge.other {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.goods-bought-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.goods-bought-chip {
+  display: inline-block;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #334155;
+  white-space: nowrap;
+}
+
+/* Analytics Dashboard Styles */
+.analytics-highlight-banner {
+  background: linear-gradient(135deg, #251c18 0%, #3e2723 100%);
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 30px rgba(37, 28, 24, 0.15);
+}
+
+.timeframe-pill-group {
+  display: flex;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 4px;
+  border-radius: 999px;
+  gap: 4px;
+}
+
+.timeframe-pill-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timeframe-pill-btn.active {
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Food Sold Specialty Card */
+.food-sold-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #a7f3d0;
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.food-sold-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.food-sold-item {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 14px;
+  text-align: center;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Charts Grid */
+.charts-grid-2col {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  border: 2px solid rgba(37, 28, 24, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Bar Chart Graphic */
+.svg-bar-chart {
+  width: 100%;
+  height: 220px;
+}
+
+.bar-column {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.bar-column:hover {
+  filter: brightness(1.15);
+  transform: scaleY(1.02);
+  transform-origin: bottom;
+}
+
+/* Most Sold Goods Leaderboard */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table th {
+  padding: 14px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid rgba(37, 28, 24, 0.06);
+  text-align: left;
+}
+
+.leaderboard-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(37, 28, 24, 0.05);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.rank-badge.rank-1 { background: #fef08a; color: #854d0e; }
+.rank-badge.rank-2 { background: #e2e8f0; color: #475569; }
+.rank-badge.rank-3 { background: #fed7aa; color: #9a3412; }
+.rank-badge.rank-other { background: #f1f5f9; color: #64748b; font-size: 12px; }
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .charts-grid-2col {
+    grid-template-columns: 1fr;
+  }
+  .food-sold-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-modal-content {
+    padding: 20px;
+    border-radius: 20px;
+  }
+  .admin-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .admin-header-row .admin-action-btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  .admin-table-container {
+    border-radius: 16px;
+  }
+  .admin-table th, .admin-table td {
+    padding: 12px 14px;
+  }
+}
+
 

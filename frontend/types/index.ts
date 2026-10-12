@@ -4,8 +4,10 @@ export interface User {
   id: number;
   first_name: string;
   last_name: string;
+  username?: string;
   email: string;
   phone?: string;
+  gender?: string;
   role: 'customer' | 'admin';
   is_verified: boolean;
   is_active: boolean;
@@ -36,14 +38,96 @@ export interface Product {
   price: number;
   compare_at_price?: number;
   stock_quantity: number;
+  unit?: string;
   status: string;
   featured: boolean;
   is_negotiable?: boolean;
+  min_price?: number;
+  max_price?: number;
   category?: Category;
   images: ProductImage[];
   created_at: string;
   description?: string;
   sku?: string;
+}
+
+export interface CustomerGoodsBought {
+  order_id: number;
+  order_number: string;
+  order_status: string;
+  product_id?: number;
+  product_name: string;
+  quantity: number;
+  unit: string;
+  unit_price: number;
+  subtotal: number;
+  date?: string;
+}
+
+export interface AdminCustomer {
+  id: number;
+  name: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  gender: string;
+  is_active: boolean;
+  created_at: string;
+  orders_count: number;
+  total_spent: number;
+  goods_bought: CustomerGoodsBought[];
+}
+
+export interface FoodStatsPeriod {
+  units: number;
+  revenue: number;
+  orders: number;
+  label: string;
+}
+
+export interface AnalyticsData {
+  summary: {
+    total_revenue: number;
+    total_orders: number;
+    total_goods_sold: number;
+    total_customers: number;
+  };
+  food_sold: {
+    week: FoodStatsPeriod;
+    month: FoodStatsPeriod;
+    year: FoodStatsPeriod;
+    all: FoodStatsPeriod;
+  };
+  sales_over_time: Array<{
+    label: string;
+    revenue: number;
+    units: number;
+    orders: number;
+  }>;
+  category_distribution: Array<{
+    name: string;
+    units: number;
+    revenue: number;
+    percentage: number;
+  }>;
+  unit_distribution: Array<{
+    unit: string;
+    units: number;
+    revenue: number;
+    percentage: number;
+  }>;
+  most_sold_goods: Array<{
+    id: number;
+    name: string;
+    category: string;
+    unit: string;
+    units_sold: number;
+    revenue: number;
+    image?: string | null;
+    stock_remaining: number;
+  }>;
+  timeframe: 'week' | 'month' | 'year' | 'all';
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────

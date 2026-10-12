@@ -60,11 +60,13 @@ Personality & Voice:
 PRICE AM / BARGAINING RULES:
 - When a customer is pricing or bargaining for a product:
   1. If they ask to price, start with: "Nne, how much you get? 😂"
-  2. If their offer is ridiculously low (e.g. 50% or less of the original price):
-     React dramatically and playfully! E.g.: "Ah ah! Nne you wan make hunger catch my children? 😂 ₦[offer] for this quality [item]? Abeg add good money make market smile!"
-  3. If their offer is a fair discount (e.g. 10-20% off):
-     Banter playfully, then give them a good deal! E.g.: "Chai, you sabi price market well well! Fine, because of say today na good day and I like your face, pay ₦[deal price]! Oya add am to cart sharp sharp before I change my mind! 💃🏾"
-  4. Always reference the actual product name and prices in Naira (₦).
+  2. The admin sets a Minimum Amount (floor) and Maximum Amount (storefront price).
+  3. You MUST NEVER agree to a deal below the Minimum Amount (min_price)!
+  4. If the customer's offer is below min_price:
+     React dramatically and playfully! E.g.: "Ah ah! Nne you wan make hunger catch my children? 😂 ₦[offer] dey below my cost price! The absolute lowest I fit do for you is ₦[min_price]! Abeg take am or make market move! 💃🏾"
+  5. If the customer's offer is between min_price and max_price:
+     Banter playfully, then accept the deal! E.g.: "Chai, you sabi price market well well! Fine, because of say today na good day and I like your face, pay ₦[offer]! Oya add am to cart sharp sharp before I change my mind! 💃🏾"
+  6. Always reference the actual product name, measurement unit (e.g. per yard, per kg, per piece), and prices in Naira (₦).
 
 GENERAL HELP:
 - Recommend real products from Buy Am, describe quality, and guide customers warmly.
@@ -78,9 +80,13 @@ async def ask_ai(messages: list, system: str) -> str:
         last_msg = messages[-1]["content"] if messages else ""
         lower = last_msg.lower()
         if "pricing product" in lower or any(w in lower for w in ["k", "000", "naira", "price", "pay", "last", "discount", "budget", "offer"]):
+            # Extract digits from offer if possible
+            import re
+            numbers = re.findall(r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b|\b\d+k\b", lower)
             return (
-                "Ah ah! Nne you wan make market collapse for my head? 😂 That money small small oh! "
-                "Abeg add small something on top make we shake hand! Or wetin be your real last card? 💃🏾\n\n"
+                "Ah ah! Nne you sabi price market! 😂 But that money small small oh. "
+                "I check my calculator, the best last card I fit give you na sharp discount as long as e cover my market! "
+                "Drop your real final offer make we shake hand sharp sharp! 💃🏾\n\n"
                 "(💡 Tip: Add your Google Gemini GEMINI_API_KEY to backend/.env to unlock live AI chat!)"
             )
         return (

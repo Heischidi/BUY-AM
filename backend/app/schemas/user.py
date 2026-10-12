@@ -7,8 +7,10 @@ from app.models.user import UserRole
 class UserCreate(BaseModel):
     first_name: str
     last_name: str
+    username: Optional[str] = None
     email: EmailStr
     phone: Optional[str] = None
+    gender: Optional[str] = "Not specified"
     password: str
 
     @field_validator("password")
@@ -20,7 +22,8 @@ class UserCreate(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    username: Optional[str] = None
+    email: Optional[str] = None
     password: str
 
 
@@ -28,8 +31,10 @@ class UserResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
+    username: Optional[str] = None
     email: str
     phone: Optional[str] = None
+    gender: Optional[str] = "Not specified"
     role: UserRole
     is_verified: bool
     is_active: bool
@@ -54,3 +59,4 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    gender: Optional[str] = None

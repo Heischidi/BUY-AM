@@ -73,6 +73,9 @@ export default function ProductPage() {
             id: product.id,
             name: product.name,
             price: Number(product.price),
+            min_price: product.min_price,
+            max_price: product.max_price,
+            unit: product.unit,
           },
         },
       })
@@ -107,6 +110,11 @@ export default function ProductPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
             <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--red)' }}>
               {money(Number(product.price))}
+              {product.unit && product.unit !== 'quantity' && product.unit !== 'item' && (
+                <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--muted)', marginLeft: 6 }}>
+                  /{product.unit}
+                </span>
+              )}
             </span>
             {product.is_negotiable && (
               <span className="negotiable-pill">
@@ -121,14 +129,16 @@ export default function ProductPage() {
 
           <div style={{ padding: '24px', borderRadius: '24px', background: 'var(--white)', border: '2px solid rgba(37,28,24,0.08)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-              <div style={{ fontWeight: 800 }}>Quantity</div>
+              <div style={{ fontWeight: 800 }}>
+                Quantity {product.unit && product.unit !== 'quantity' ? `(${product.unit}s)` : ''}
+              </div>
               <div className="quantity-control" style={{ margin: 0 }}>
                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={{ width: 32, height: 32 }}>−</button>
                 <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 800 }}>{quantity}</span>
                 <button onClick={() => setQuantity(q => q + 1)} style={{ width: 32, height: 32 }}>+</button>
               </div>
               <span style={{ color: 'var(--muted)', fontSize: 14 }}>
-                {product.stock_quantity} available
+                {product.stock_quantity} {product.unit || 'items'} available
               </span>
             </div>
 

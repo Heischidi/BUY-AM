@@ -29,6 +29,9 @@ class Product(Base):
     status = Column(Enum(ProductStatus), default=ProductStatus.active, nullable=False)
     featured = Column(Boolean, default=False)
     is_negotiable = Column(Boolean, default=False, nullable=False)
+    unit = Column(String(50), default="quantity", nullable=False)  # e.g., 'quantity', 'yard', 'kg', 'pack'
+    min_price = Column(Numeric(12, 2), nullable=True)  # Floor price for Mama Nkechi
+    max_price = Column(Numeric(12, 2), nullable=True)  # Ceiling price (displayed on storefront)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

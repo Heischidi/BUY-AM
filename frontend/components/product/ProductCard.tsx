@@ -71,7 +71,14 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
           <div className="product-name">{product.name}</div>
         </Link>
         <div className="product-bottom">
-          <span className="price">{money(Number(product.price))}</span>
+          <span className="price">
+            {money(Number(product.price))}
+            {product.unit && product.unit !== 'quantity' && product.unit !== 'item' && (
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginLeft: 4 }}>
+                /{product.unit}
+              </span>
+            )}
+          </span>
           {product.is_negotiable && (
             <button
               ref={priceBtnRef}
