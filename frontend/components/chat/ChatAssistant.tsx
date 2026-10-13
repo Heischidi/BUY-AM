@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, FormEvent } from 'react';
 import { aiApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { ChatMessage } from '@/types';
+import { motion, useReducedMotion } from 'motion/react';
 
 interface BargainProduct {
   id: number;
@@ -114,16 +115,52 @@ export default function ChatAssistant() {
     `Abeg cut 20% for me`,
   ] : null;
 
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <>
-      <button
-        className="chat-toggle"
-        id="chatToggle"
-        onClick={() => setIsOpen(o => !o)}
-        aria-label="Open Mama Nkechi assistant"
-      >
-        👩🏾‍🦱
-      </button>
+      <div className="chat-toggle-wrapper">
+        {/* Floating invitation pill when chat is closed */}
+        {!isOpen && !shouldReduceMotion && (
+          <motion.div
+            className="chat-invitation-pill"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1, duration: 0.5 }}
+            onClick={() => setIsOpen(true)}
+          >
+            <span style={{ color: 'var(--green)' }}>●</span> Ask Mama Nkechi ✨
+          </motion.div>
+        )}
+
+        <div style={{ position: 'relative' }}>
+          {/* Ambient Pulsing Ring */}
+          {!isOpen && !shouldReduceMotion && (
+            <motion.span
+              style={{
+                position: 'absolute',
+                inset: '-4px',
+                borderRadius: '50%',
+                border: '3px solid var(--green)',
+                pointerEvents: 'none',
+              }}
+              animate={{ scale: [1, 1.25, 1.35], opacity: [0.7, 0.2, 0] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeOut' }}
+            />
+          )}
+
+          <motion.button
+            className="chat-toggle"
+            id="chatToggle"
+            onClick={() => setIsOpen(o => !o)}
+            aria-label="Open Mama Nkechi assistant"
+            whileHover={!shouldReduceMotion ? { scale: 1.08, rotate: -4 } : undefined}
+            whileTap={!shouldReduceMotion ? { scale: 0.94 } : undefined}
+          >
+            👩🏾‍🦱
+          </motion.button>
+        </div>
+      </div>
 
       <section
         className={`chat-panel ${isOpen ? 'open' : ''}`}
@@ -169,18 +206,26 @@ export default function ChatAssistant() {
 
         <div className="chat-messages" id="chatMessages" ref={messagesRef}>
           {messages.map((msg, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={!shouldReduceMotion ? { opacity: 0, y: 6 } : undefined}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
               className={`message ${msg.role === 'user' ? 'user' : 'bot'}`}
               style={{ whiteSpace: 'pre-line' }}
             >
               {msg.content}
-            </div>
+            </motion.div>
           ))}
           {loading && (
-            <div className="message bot" style={{ color: 'var(--muted)', fontStyle: 'italic' }}>
+            <motion.div
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="message bot"
+              style={{ color: 'var(--muted)', fontStyle: 'italic' }}
+            >
               Mama Nkechi is calculating market price… 🤔
-            </div>
+            </motion.div>
           )}
         </div>
 

@@ -8,6 +8,7 @@ import { useCart, money } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
 import { cardHoverIn, cardHoverOut, animateAddToCart, animateButtonPress } from '@/lib/anime';
+import { motion, useReducedMotion } from 'motion/react';
 
 interface ProductCardProps {
   product: Product;
@@ -25,6 +26,7 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
 
   const image = product.images?.[0]?.url;
   const saved = isSaved(product.id);
+  const shouldReduceMotion = useReducedMotion();
 
   const handleAddToCart = async () => {
     if (addBtnRef.current) animateAddToCart(addBtnRef.current);
@@ -74,13 +76,18 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
             -{product.discount_percentage}% OFF
           </span>
         )}
-        <button
+        <motion.button
           className={`heart-button ${saved ? 'saved' : ''}`}
           onClick={() => toggle(product.id)}
+          whileTap={!shouldReduceMotion ? { scale: 0.72 } : undefined}
+          animate={!shouldReduceMotion && saved ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 15 }}
           aria-label={`${saved ? 'Remove from' : 'Add to'} wishlist`}
         >
-          {saved ? '♥️' : '♡'}
-        </button>
+          <span style={{ display: 'inline-block', transition: 'color 0.15s ease' }}>
+            {saved ? '♥️' : '♡'}
+          </span>
+        </motion.button>
       </div>
 
       <div className="product-info">
@@ -118,9 +125,11 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
             )}
           </div>
           {product.is_negotiable && (
-            <button
+            <motion.button
               ref={priceBtnRef}
               className="price-button"
+              whileHover={!shouldReduceMotion ? { scale: 1.04 } : undefined}
+              whileTap={!shouldReduceMotion ? { scale: 0.94 } : undefined}
               onClick={() => {
                 if (priceBtnRef.current) animateButtonPress(priceBtnRef.current);
                 onPriceClick?.(product);
@@ -134,12 +143,18 @@ export default function ProductCard({ product, onPriceClick }: ProductCardProps)
               }}
             >
               You fit price am
-            </button>
+            </motion.button>
           )}
         </div>
-        <button ref={addBtnRef} className="add-button" onClick={handleAddToCart}>
+        <motion.button
+          ref={addBtnRef}
+          className="add-button"
+          whileHover={!shouldReduceMotion ? { scale: 1.02 } : undefined}
+          whileTap={!shouldReduceMotion ? { scale: 0.96 } : undefined}
+          onClick={handleAddToCart}
+        >
           Add to cart
-        </button>
+        </motion.button>
       </div>
     </article>
   );

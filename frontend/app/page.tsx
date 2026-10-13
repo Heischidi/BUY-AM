@@ -7,6 +7,7 @@ import { Product, Category } from '@/types';
 import ProductCard from '@/components/product/ProductCard';
 import CategoryGrid from '@/components/product/CategoryGrid';
 import ProcurementModal from '@/components/ui/ProcurementModal';
+import HeroCardStack from '@/components/home/HeroCardStack';
 import Link from 'next/link';
 import {
   animateHeroEntrance,
@@ -158,13 +159,7 @@ function HomeContent() {
           </div>
 
           <div className="hero-art" style={{ opacity: 0, animation: 'heroArtFloat 0.8s 0.6s ease forwards' }}>
-            <div className="market-card">
-              <div className="market-copy">
-                <small>Official Store</small>
-                <strong>100%<br />Direct<br />Brand</strong>
-              </div>
-              <div className="basket" />
-            </div>
+            <HeroCardStack />
           </div>
         </div>
       </section>
@@ -190,32 +185,87 @@ function HomeContent() {
           />
 
           <div className="trust-strip reveal-section" ref={trustStripRef}>
-            <div className="trust-card">
-              <div className="trust-icon">🛡️</div>
+            <div
+              className="trust-card"
+              style={{
+                transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 14px 28px rgba(72, 35, 13, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(72, 35, 13, 0.06)';
+              }}
+            >
+              <div className="trust-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>🛡️</div>
               <div>
                 <strong>Secure Payments</strong>
-                <span>100% protected transactions</span>
+                <span>100% escrow & bank-grade</span>
               </div>
             </div>
-            <div className="trust-card">
-              <div className="trust-icon">🚚</div>
+
+            <div
+              className="trust-card"
+              style={{
+                transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 14px 28px rgba(72, 35, 13, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(72, 35, 13, 0.06)';
+              }}
+            >
+              <div className="trust-icon" style={{ background: '#fef9c3', color: '#ca8a04' }}>🚚</div>
               <div>
                 <strong>Nationwide Delivery</strong>
-                <span>Fast and reliable shipping</span>
+                <span>Direct to all 36 states</span>
               </div>
             </div>
-            <div className="trust-card">
-              <div className="trust-icon">✨</div>
+
+            <div
+              className="trust-card"
+              style={{
+                transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 14px 28px rgba(72, 35, 13, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(72, 35, 13, 0.06)';
+              }}
+            >
+              <div className="trust-icon" style={{ background: '#fee2e2', color: '#dc2626' }}>✨</div>
               <div>
                 <strong>Quality Guaranteed</strong>
                 <span>100% authentic brand items</span>
               </div>
             </div>
-            <div className="trust-card">
-              <div className="trust-icon">👩🏾‍🦱</div>
+
+            <div
+              className="trust-card"
+              style={{
+                transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 14px 28px rgba(72, 35, 13, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(72, 35, 13, 0.06)';
+              }}
+            >
+              <div className="trust-icon" style={{ background: '#f3e8ff', color: '#9333ea' }}>👩🏾‍🦱</div>
               <div>
                 <strong>Mama Nkechi AI</strong>
-                <span>Smart shopping assistant</span>
+                <span>Bargain & shopping assistant</span>
               </div>
             </div>
           </div>
