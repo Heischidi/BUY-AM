@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     # AI
     AI_PROVIDER: str = "gemini"
     AI_API_KEY: str = ""
-    AI_MODEL: str = "gemini-1.5-flash"
+    AI_MODEL: str = "gemini-3.8-flash"
 
     # Cloudinary
     CLOUDINARY_CLOUD_NAME: str = ""

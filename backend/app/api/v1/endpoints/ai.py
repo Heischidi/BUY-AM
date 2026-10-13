@@ -1,7 +1,10 @@
 import uuid
+import logging
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 from app.core.database import get_db
 from app.core.security import get_optional_user
 from app.core.config import settings
@@ -98,20 +101,49 @@ async def ask_ai(messages: list, system: str) -> str:
         if settings.AI_PROVIDER == "gemini":
             import google.generativeai as genai
             genai.configure(api_key=settings.AI_API_KEY)
-            model = genai.GenerativeModel(
-                model_name=settings.AI_MODEL,
-                system_instruction=system,
-            )
+
+            # Available models priority: configured model first, followed by active versions
+            candidate_models = [settings.AI_MODEL, "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"]
+            models_to_try = []
+            for m in candidate_models:
+                if m and m not in models_to_try:
+                    models_to_try.append(m)
+
+            # Multiturn history in Google Generative AI must start with 'user'
+            filtered_msgs = messages[:-1]
+            while filtered_msgs and filtered_msgs[0]["role"] != "user":
+                filtered_msgs = filtered_msgs[1:]
+
             history = []
-            for msg in messages[:-1]:
+            for msg in filtered_msgs:
                 history.append({
                     "role": "user" if msg["role"] == "user" else "model",
                     "parts": [msg["content"]],
                 })
-            chat = model.start_chat(history=history)
-            response = chat.send_message(messages[-1]["content"])
-            return response.text
+
+            last_content = messages[-1]["content"] if messages else ""
+
+            last_err = None
+            for model_name in models_to_try:
+                try:
+                    model = genai.GenerativeModel(
+                        model_name=model_name,
+                        system_instruction=system,
+                    )
+                    chat = model.start_chat(history=history)
+                    response = chat.send_message(last_content)
+                    return response.text
+                except Exception as model_err:
+                    last_err = model_err
+                    logger.warning(f"[Mama Nkechi] Model '{model_name}' failed: {model_err}. Trying fallback...")
+                    continue
+
+            if last_err:
+                logger.error(f"[Mama Nkechi All Gemini Models Failed]: {last_err}", exc_info=True)
+                raise last_err
+
     except Exception as e:
+        logger.error(f"[Mama Nkechi AI Error]: {e}", exc_info=True)
         return "Ehya, network wan delay me small! Abeg try again in a moment, my dear."
 
 
