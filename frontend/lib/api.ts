@@ -122,8 +122,8 @@ export const categoriesApi = {
 export const cartApi = {
   get: (token: string) => request('/cart', { token }),
 
-  addItem: (productId: number, quantity: number, token: string) =>
-    request('/cart/items', { method: 'POST', body: { product_id: productId, quantity }, token }),
+  addItem: (productId: number, quantity: number, token: string, customPrice?: number) =>
+    request('/cart/items', { method: 'POST', body: { product_id: productId, quantity, custom_price: customPrice }, token }),
 
   updateItem: (itemId: number, quantity: number, token: string) =>
     request(`/cart/items/${itemId}`, { method: 'PATCH', body: { quantity }, token }),
@@ -185,10 +185,10 @@ export const addressesApi = {
 // ─── AI / Mama Nkechi ──────────────────────────────────────────
 
 export const aiApi = {
-  chat: (message: string, sessionToken?: string, token?: string) =>
+  chat: (message: string, sessionToken?: string, token?: string, productId?: number) =>
     request('/ai/chat', {
       method: 'POST',
-      body: { message, session_token: sessionToken },
+      body: { message, session_token: sessionToken, product_id: productId },
       token,
     }),
 };

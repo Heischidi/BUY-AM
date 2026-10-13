@@ -215,15 +215,26 @@ export interface ProcurementRequest {
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
+export interface DealAccepted {
+  product_id: number;
+  product_name: string;
+  agreed_price: number;
+  original_price: number;
+  unit?: string;
+  image?: string | null;
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'bot';
   content: string;
+  deal?: DealAccepted;
 }
 
 export interface ChatResponse {
   reply: string;
   session_token: string;
   products?: Partial<Product>[];
+  deal?: DealAccepted;
 }
 
 // ─── Address ──────────────────────────────────────────────────────────────────

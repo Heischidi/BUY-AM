@@ -69,7 +69,10 @@ PRICE AM / BARGAINING RULES:
      React dramatically and playfully! E.g.: "Ah ah! Nne you wan make hunger catch my children? 😂 ₦[offer] dey below my cost price! The absolute lowest I fit do for you is ₦[min_price]! Abeg take am or make market move! 💃🏾"
   5. If the customer's offer is between min_price and max_price:
      Banter playfully, then accept the deal! E.g.: "Chai, you sabi price market well well! Fine, because of say today na good day and I like your face, pay ₦[offer]! Oya add am to cart sharp sharp before I change my mind! 💃🏾"
-  6. Always reference the actual product name, measurement unit (e.g. per yard, per kg, per piece), and prices in Naira (₦).
+  6. CRITICAL DEAL TAG: Whenever you accept an offer or strike an agreed deal, you MUST append this exact tag at the very end of your response on its own line:
+     [DEAL_ACCEPTED: price=AGREED_AMOUNT]
+     (For example: [DEAL_ACCEPTED: price=12000]). Do not include this tag if the offer is rejected.
+  7. Always reference the actual product name, measurement unit (e.g. per yard, per kg, per piece), and prices in Naira (₦).
 
 GENERAL HELP:
 - Recommend real products from Buy Am, describe quality, and guide customers warmly.
@@ -200,13 +203,49 @@ async def chat(
         messages_for_ai[-1]["content"] += catalog_context
 
     system = build_system_prompt()
-    reply = await ask_ai(messages_for_ai, system)
+    raw_reply = await ask_ai(messages_for_ai, system)
 
-    # Save assistant response
+    # Parse and extract deal acceptance tag if present
+    import re
+    deal_info = None
+    clean_reply = raw_reply
+
+    deal_match = re.search(r"\[DEAL_ACCEPTED:\s*(?:product_id=(\d+)[,\s]*)?price=(\d+(?:\.\d+)?)\]", raw_reply, re.IGNORECASE)
+    if deal_match:
+        matched_prod_id = deal_match.group(1)
+        matched_price = float(deal_match.group(2))
+        clean_reply = re.sub(r"\[DEAL_ACCEPTED:[^\]]+\]", "", raw_reply).strip()
+
+        target_prod_id = None
+        if matched_prod_id:
+            target_prod_id = int(matched_prod_id)
+        elif body.product_id:
+            target_prod_id = body.product_id
+        else:
+            id_match = re.search(r"\(ID:\s*(\d+)", body.message)
+            if id_match:
+                target_prod_id = int(id_match.group(1))
+
+        if target_prod_id:
+            prod_obj = db.query(Product).options(joinedload(Product.images)).filter(Product.id == target_prod_id).first()
+            if prod_obj:
+                floor_price = float(prod_obj.min_price) if prod_obj.min_price is not None else 0.0
+                if matched_price >= floor_price:
+                    img_url = prod_obj.images[0].url if prod_obj.images else None
+                    deal_info = {
+                        "product_id": prod_obj.id,
+                        "product_name": prod_obj.name,
+                        "agreed_price": matched_price,
+                        "original_price": float(prod_obj.price),
+                        "unit": prod_obj.unit or "quantity",
+                        "image": img_url,
+                    }
+
+    # Save assistant response (without raw bracket tag)
     bot_msg = ChatMessage(
         session_id=session.id,
         role=MessageRole.assistant,
-        content=reply,
+        content=clean_reply,
     )
     db.add(bot_msg)
     db.commit()
@@ -214,13 +253,13 @@ async def chat(
     # Serialize found_products safely
     safe_products = []
     for p in found_products:
-        # Convert Decimal to float for JSON
         p_safe = {k: float(v) if hasattr(v, '__float__') and not isinstance(v, (str, int, bool)) else v
                   for k, v in p.items()}
         safe_products.append(p_safe)
 
     return ChatResponse(
-        reply=reply,
+        reply=clean_reply,
         session_token=session.session_token,
         products=safe_products if safe_products else None,
+        deal=deal_info,
     )

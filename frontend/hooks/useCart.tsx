@@ -11,14 +11,14 @@ interface CartState {
   loading: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (productId: number, quantity?: number) => Promise<void>;
+  addItem: (productId: number, quantity?: number, customPrice?: number) => Promise<void>;
   updateItem: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
   itemCount: number;
   // Guest cart (localStorage fallback)
-  guestCart: { id: number; name: string; price: number; image: string; quantity: number }[];
-  addToGuestCart: (product: Product) => void;
+  guestCart: { id: number; name: string; price: number; originalPrice?: number; image: string; quantity: number }[];
+  addToGuestCart: (product: Product, customPrice?: number) => void;
   removeFromGuestCart: (productId: number) => void;
   changeGuestQty: (productId: number, delta: number) => void;
 }
@@ -34,7 +34,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [guestCart, setGuestCart] = useState<{ id: number; name: string; price: number; image: string; quantity: number }[]>([]);
+  const [guestCart, setGuestCart] = useState<{ id: number; name: string; price: number; originalPrice?: number; image: string; quantity: number }[]>([]);
 
   // Load guest cart from localStorage
   useEffect(() => {
@@ -67,9 +67,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  const addItem = async (productId: number, quantity = 1) => {
+  const addItem = async (productId: number, quantity = 1, customPrice?: number) => {
     if (!token) return;
-    const data = await cartApi.addItem(productId, quantity, token) as Cart;
+    const data = await cartApi.addItem(productId, quantity, token, customPrice) as Cart;
     setCart(data);
     setIsOpen(true);
   };
@@ -93,16 +93,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   // Guest cart operations
-  const addToGuestCart = (product: Product) => {
+  const addToGuestCart = (product: Product, customPrice?: number) => {
     const existing = guestCart.find(i => i.id === product.id);
     const image = product.images?.[0]?.url || '';
-    const effectivePrice = product.discount_percentage && product.discount_percentage > 0
-      ? (product.discounted_price ?? Math.round(Number(product.price) * (1 - product.discount_percentage / 100)))
-      : Number(product.price);
+    const originalPrice = Number(product.price);
+    const effectivePrice = customPrice !== undefined
+      ? customPrice
+      : product.discount_percentage && product.discount_percentage > 0
+        ? (product.discounted_price ?? Math.round(originalPrice * (1 - product.discount_percentage / 100)))
+        : originalPrice;
     if (existing) {
-      saveGuestCart(guestCart.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i));
+      saveGuestCart(guestCart.map(i => i.id === product.id ? { ...i, price: effectivePrice, originalPrice, quantity: i.quantity + 1 } : i));
     } else {
-      saveGuestCart([...guestCart, { id: product.id, name: product.name, price: effectivePrice, image, quantity: 1 }]);
+      saveGuestCart([...guestCart, { id: product.id, name: product.name, price: effectivePrice, originalPrice, image, quantity: 1 }]);
     }
     setIsOpen(true);
   };

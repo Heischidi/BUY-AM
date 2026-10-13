@@ -64,6 +64,7 @@ export default function CartDrawer() {
 
     return cart.items.map(item => {
       const img = item.product?.images?.[0]?.url || '/placeholder.jpg';
+      const isBargained = item.product && Number(item.unit_price) < Number(item.product.price);
       return (
         <div className="cart-item" key={item.id}>
           <div style={{ position: 'relative', width: 64, height: 64 }}>
@@ -71,7 +72,14 @@ export default function CartDrawer() {
           </div>
           <div>
             <strong>{item.product?.name}</strong>
-            <small>{money(Number(item.unit_price))}</small>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <small>{money(Number(item.unit_price))}</small>
+              {isBargained && (
+                <span style={{ fontSize: 10, background: 'rgba(46, 125, 50, 0.14)', color: '#2e7d32', padding: '1px 6px', borderRadius: 6, fontWeight: 800 }}>
+                  🏷️ Price Am Deal
+                </span>
+              )}
+            </div>
             <div className="quantity-control">
               <button onClick={() => updateItem(item.id, item.quantity - 1)} aria-label="Decrease">−</button>
               <span>{item.quantity}</span>
@@ -105,7 +113,14 @@ export default function CartDrawer() {
         )}
         <div>
           <strong>{item.name}</strong>
-          <small>{money(item.price)}</small>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <small>{money(item.price)}</small>
+            {item.originalPrice && item.price < item.originalPrice && (
+              <span style={{ fontSize: 10, background: 'rgba(46, 125, 50, 0.14)', color: '#2e7d32', padding: '1px 6px', borderRadius: 6, fontWeight: 800 }}>
+                🏷️ Price Am Deal
+              </span>
+            )}
+          </div>
           <div className="quantity-control">
             <button onClick={() => changeGuestQty(item.id, -1)} aria-label="Decrease">−</button>
             <span>{item.quantity}</span>

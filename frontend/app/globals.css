@@ -1060,6 +1060,136 @@ footer a {
   place-items: center;
 }
 
+/* ── Mama Nkechi Chat Deal Card ──────────────────────────────── */
+.chat-deal-card {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.09) 0%, rgba(243, 156, 18, 0.09) 100%), #ffffff;
+  border: 2px solid #2e7d32;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.15);
+  animation: dealPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes dealPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.chat-deal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.chat-deal-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #2e7d32;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 3px 9px;
+  letter-spacing: 0.02em;
+}
+
+.chat-deal-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chat-deal-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fdfbf7;
+}
+
+.chat-deal-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-deal-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.chat-deal-prices {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.chat-deal-original {
+  font-size: 11px;
+  text-decoration: line-through;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.chat-deal-agreed {
+  font-size: 17px;
+  font-weight: 900;
+  color: #2e7d32;
+}
+
+.chat-deal-savings {
+  font-size: 10px;
+  font-weight: 800;
+  color: #d9534f;
+  background: rgba(217, 83, 79, 0.12);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.chat-deal-add-btn {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #2e7d32 0%, #1e6b22 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(46, 125, 50, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.chat-deal-add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(46, 125, 50, 0.4);
+}
+
+.chat-deal-add-btn:active {
+  transform: scale(0.97);
+}
+
+.chat-deal-add-btn.added {
+  background: #1b5e20;
+  box-shadow: none;
+}
+
 /* ── Procurement Modal ───────────────────────────────────────── */
 .modal-backdrop {
   position: fixed;

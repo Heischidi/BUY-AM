@@ -29,6 +29,7 @@ class CartResponse(BaseModel):
 class CartItemAdd(BaseModel):
     product_id: int
     quantity: int = 1
+    custom_price: Optional[Decimal] = None
 
 
 class CartItemUpdate(BaseModel):

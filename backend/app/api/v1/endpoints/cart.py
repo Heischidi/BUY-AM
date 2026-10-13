@@ -79,17 +79,26 @@ def add_to_cart(body: CartItemAdd, current_user=Depends(get_current_user), db: S
         CartItem.cart_id == cart.id, CartItem.product_id == body.product_id
     ).first()
 
+    # Determine effective unit price (standard price or accepted bargain price)
+    effective_price = (
+        product.discounted_price
+        if product.discount_percentage and float(product.discount_percentage) > 0
+        else product.price
+    )
+    if body.custom_price is not None:
+        if product.is_negotiable:
+            if product.min_price is not None and body.custom_price < product.min_price:
+                raise HTTPException(status_code=400, detail=f"Offer is below minimum floor price")
+            effective_price = body.custom_price
+
     if existing:
         new_qty = existing.quantity + body.quantity
         if product.stock_quantity < new_qty:
             raise HTTPException(status_code=400, detail="Insufficient stock")
         existing.quantity = new_qty
+        if body.custom_price is not None and product.is_negotiable:
+            existing.unit_price = effective_price
     else:
-        effective_price = (
-            product.discounted_price
-            if product.discount_percentage and float(product.discount_percentage) > 0
-            else product.price
-        )
         item = CartItem(
             cart_id=cart.id,
             product_id=body.product_id,

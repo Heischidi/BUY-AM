@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { aiApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import { ChatMessage } from '@/types';
+import { useCart } from '@/hooks/useCart';
+import { ChatMessage, DealAccepted } from '@/types';
 import { motion, useReducedMotion } from 'motion/react';
 
 interface BargainProduct {
@@ -13,6 +14,8 @@ interface BargainProduct {
   min_price?: number;
   max_price?: number;
   unit?: string;
+  image?: string;
+  images?: { url: string }[];
 }
 
 const DEFAULT_SUGGESTIONS = [
@@ -34,8 +37,12 @@ export default function ChatAssistant() {
   const [loading, setLoading] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | undefined>();
   const [bargainProduct, setBargainProduct] = useState<BargainProduct | null>(null);
+  const [addingDealId, setAddingDealId] = useState<number | null>(null);
+  const [addedDealIds, setAddedDealIds] = useState<Set<number>>(new Set());
+
   const messagesRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
+  const { addItem, addToGuestCart, openCart } = useCart();
 
   useEffect(() => {
     if (messagesRef.current) {
@@ -50,8 +57,9 @@ export default function ChatAssistant() {
       const prod = customEvent.detail?.product;
       if (!prod) return;
 
+      const img = prod.images?.[0]?.url || (prod as any).image;
       setIsOpen(true);
-      setBargainProduct(prod);
+      setBargainProduct({ ...prod, image: img });
 
       const priceFormatted = Number(prod.price).toLocaleString();
       const unitNotice = prod.unit && prod.unit !== 'quantity' ? ` per ${prod.unit}` : '';
@@ -67,6 +75,33 @@ export default function ChatAssistant() {
     return () => window.removeEventListener('open-bargain-chat', handleBargain);
   }, []);
 
+  const handleAddDealToCart = async (deal: DealAccepted) => {
+    setAddingDealId(deal.product_id);
+    try {
+      if (token) {
+        await addItem(deal.product_id, 1, deal.agreed_price);
+      } else {
+        addToGuestCart({
+          id: deal.product_id,
+          name: deal.product_name,
+          price: deal.original_price,
+          images: deal.image ? [{ url: deal.image, id: 0, sort_order: 0, alt_text: deal.product_name }] : [],
+          stock_quantity: 99,
+          slug: '',
+          status: 'active',
+          featured: false,
+          created_at: new Date().toISOString(),
+        } as any, deal.agreed_price);
+      }
+      setAddedDealIds(prev => new Set([...prev, deal.product_id]));
+      openCart();
+    } catch (e) {
+      console.error('Failed to add bargained deal to cart:', e);
+    } finally {
+      setAddingDealId(null);
+    }
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
 
@@ -80,18 +115,60 @@ export default function ChatAssistant() {
     const unitPart = bargainProduct?.unit && bargainProduct.unit !== 'quantity' ? ` per ${bargainProduct.unit}` : '';
     const minPart = bargainProduct?.min_price ? `, Min floor price: ₦${bargainProduct.min_price}` : '';
     const messageForAi = bargainProduct
-      ? `[Customer is pricing product: "${bargainProduct.name}" (Storefront price: ₦${bargainProduct.price}${unitPart}${minPart})]: ${text}`
+      ? `[Customer is pricing product: "${bargainProduct.name}" (ID: ${bargainProduct.id}, Storefront price: ₦${bargainProduct.price}${unitPart}${minPart})]: ${text}`
       : text;
 
     try {
-      const res = await aiApi.chat(messageForAi, sessionToken, token || undefined) as {
+      const res = await aiApi.chat(messageForAi, sessionToken, token || undefined, bargainProduct?.id) as {
         reply: string;
         session_token: string;
         products?: unknown[];
+        deal?: DealAccepted;
       };
       setSessionToken(res.session_token);
 
-      const botMsg: ChatMessage = { role: 'assistant', content: res.reply };
+      let recognizedDeal = res.deal;
+
+      // Smart client-side fallback if Mama Nkechi accepted in text without tag
+      if (!recognizedDeal && bargainProduct) {
+        const replyLower = res.reply.toLowerCase();
+        const agreementKeywords = [
+          'accept', 'deal', 'gree', 'take am', 'pay ₦', 'shake hand',
+          'sealed', 'sharp sharp', 'add am to cart', 'i like your face',
+          'pay '
+        ];
+        const hasAgreement = agreementKeywords.some(kw => replyLower.includes(kw));
+
+        const priceRegex = /₦?\s*(\d{1,3}(?:,\d{3})*|\d+)\s*(?:k|\b)/gi;
+        const allMatches = [...(text + ' ' + res.reply).matchAll(priceRegex)];
+        const candidates: number[] = [];
+        for (const m of allMatches) {
+          const raw = m[1].replace(/,/g, '');
+          let val = parseFloat(raw);
+          if (m[0].toLowerCase().includes('k')) val *= 1000;
+          if (val > 100) candidates.push(val);
+        }
+
+        const minPrice = bargainProduct.min_price || Math.round(bargainProduct.price * 0.7);
+        const validPrice = candidates.find(p => p >= minPrice && p <= bargainProduct.price);
+
+        if (hasAgreement && validPrice) {
+          recognizedDeal = {
+            product_id: bargainProduct.id,
+            product_name: bargainProduct.name,
+            agreed_price: validPrice,
+            original_price: bargainProduct.price,
+            unit: bargainProduct.unit,
+            image: bargainProduct.image,
+          };
+        }
+      }
+
+      const botMsg: ChatMessage = {
+        role: 'assistant',
+        content: res.reply,
+        deal: recognizedDeal,
+      };
       setMessages(prev => [...prev, botMsg]);
     } catch {
       setMessages(prev => [...prev, {
@@ -212,9 +289,68 @@ export default function ChatAssistant() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
               className={`message ${msg.role === 'user' ? 'user' : 'bot'}`}
-              style={{ whiteSpace: 'pre-line' }}
             >
-              {msg.content}
+              <div style={{ whiteSpace: 'pre-line' }}>{msg.content}</div>
+
+              {msg.deal && (
+                <div className="chat-deal-card">
+                  <div className="chat-deal-header">
+                    <span className="chat-deal-badge-pill">
+                      ✨ Price Am Deal Agreed! 💃🏾
+                    </span>
+                  </div>
+
+                  <div className="chat-deal-body">
+                    {msg.deal.image ? (
+                      <img
+                        src={msg.deal.image}
+                        alt={msg.deal.product_name}
+                        className="chat-deal-img"
+                      />
+                    ) : (
+                      <div className="chat-deal-img" style={{ display: 'grid', placeItems: 'center', fontSize: 22 }}>
+                        🛍️
+                      </div>
+                    )}
+                    <div className="chat-deal-info">
+                      <strong className="chat-deal-title">{msg.deal.product_name}</strong>
+                      <div className="chat-deal-prices">
+                        <span className="chat-deal-original">
+                          ₦{Number(msg.deal.original_price).toLocaleString()}
+                        </span>
+                        <span className="chat-deal-agreed">
+                          ₦{Number(msg.deal.agreed_price).toLocaleString()}
+                        </span>
+                        {msg.deal.unit && msg.deal.unit !== 'quantity' && (
+                          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
+                            /{msg.deal.unit}
+                          </span>
+                        )}
+                        {msg.deal.original_price > msg.deal.agreed_price && (
+                          <span className="chat-deal-savings">
+                            Save ₦{Number(msg.deal.original_price - msg.deal.agreed_price).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`chat-deal-add-btn ${addedDealIds.has(msg.deal.product_id) ? 'added' : ''}`}
+                    onClick={() => handleAddDealToCart(msg.deal!)}
+                    disabled={addingDealId === msg.deal.product_id}
+                  >
+                    {addedDealIds.has(msg.deal.product_id) ? (
+                      <>✓ Added to Cart at ₦{Number(msg.deal.agreed_price).toLocaleString()}! 🛒</>
+                    ) : addingDealId === msg.deal.product_id ? (
+                      <>Adding to cart... ⏳</>
+                    ) : (
+                      <>🛒 Add to Cart @ ₦{Number(msg.deal.agreed_price).toLocaleString()}</>
+                    )}
+                  </button>
+                </div>
+              )}
             </motion.div>
           ))}
           {loading && (
