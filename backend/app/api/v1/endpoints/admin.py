@@ -10,10 +10,13 @@ from app.models.order import Order, OrderItem
 from app.models.procurement import ProcurementRequest
 from app.schemas.procurement import ProcurementStatusUpdate
 
+import re
+import logging
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timedelta
-import re
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -91,36 +94,55 @@ def list_admin_products(
     _=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    products = (
-        db.query(Product)
-        .options(joinedload(Product.images), joinedload(Product.category))
-        .order_by(Product.id.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-    return [
-        {
-            "id": p.id,
-            "name": p.name,
-            "slug": p.slug,
-            "price": float(p.price),
-            "stock_quantity": p.stock_quantity,
-            "unit": p.unit or "quantity",
-            "status": p.status.value if hasattr(p.status, "value") else str(p.status),
-            "featured": p.featured,
-            "is_negotiable": bool(p.is_negotiable),
-            "min_price": float(p.min_price) if p.min_price is not None else None,
-            "max_price": float(p.max_price) if p.max_price is not None else None,
-            "discount_percentage": float(p.discount_percentage) if p.discount_percentage is not None else None,
-            "discounted_price": round(float(p.price) * (1 - float(p.discount_percentage) / 100), 2) if p.discount_percentage else None,
-            "category": {"id": p.category.id, "name": p.category.name} if p.category else None,
-            "image": p.images[0].url if p.images else None,
-            "description": p.description,
-            "created_at": p.created_at,
-        }
-        for p in products
-    ]
+    def fetch_and_serialize():
+        products = (
+            db.query(Product)
+            .options(joinedload(Product.images), joinedload(Product.category))
+            .order_by(Product.id.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        serialized = []
+        for p in products:
+            price_val = float(p.price) if p.price is not None else 0.0
+            disc_pct = float(p.discount_percentage) if p.discount_percentage is not None else None
+            disc_price = round(price_val * (1.0 - (disc_pct / 100.0)), 2) if (disc_pct is not None and price_val > 0) else None
+            created_at_str = p.created_at.isoformat() if hasattr(p.created_at, "isoformat") else str(p.created_at) if p.created_at else None
+
+            serialized.append({
+                "id": p.id,
+                "name": p.name or "",
+                "slug": p.slug or "",
+                "price": price_val,
+                "stock_quantity": p.stock_quantity or 0,
+                "unit": p.unit or "quantity",
+                "status": p.status.value if hasattr(p.status, "value") else str(p.status or "active"),
+                "featured": bool(p.featured),
+                "is_negotiable": bool(p.is_negotiable),
+                "min_price": float(p.min_price) if p.min_price is not None else None,
+                "max_price": float(p.max_price) if p.max_price is not None else None,
+                "discount_percentage": disc_pct,
+                "discounted_price": disc_price,
+                "category": {"id": p.category.id, "name": p.category.name} if p.category else None,
+                "image": p.images[0].url if (p.images and len(p.images) > 0) else None,
+                "description": p.description or "",
+                "created_at": created_at_str,
+            })
+        return serialized
+
+    try:
+        return fetch_and_serialize()
+    except Exception as e:
+        logger.warning(f"[Admin Products Warning]: Query failed with error: {e}. Attempting self-healing init_db()...")
+        try:
+            from app.core.init_db import init_db
+            init_db()
+            db.rollback()
+            return fetch_and_serialize()
+        except Exception as retry_err:
+            logger.error(f"[Admin Products Error]: Retry failed: {retry_err}", exc_info=True)
+            return []
 
 
 @router.post("/products", status_code=201)

@@ -106,13 +106,25 @@ class ClockOutRequest(BaseModel):
 
 # ─── Admin: Staff CRUD ─────────────────────────────────────────
 
+@router.get("", tags=["Staff"])
 @router.get("/", tags=["Staff"])
 def list_staff(_=Depends(require_admin), db: Session = Depends(get_db)):
     """List all registered staff members (admin only)."""
-    staff_list = db.query(Staff).order_by(Staff.created_at.desc()).all()
-    return [staff_to_dict(s) for s in staff_list]
+    try:
+        staff_list = db.query(Staff).order_by(Staff.created_at.desc()).all()
+        return [staff_to_dict(s) for s in staff_list]
+    except Exception as e:
+        # Self-heal if staff table is not yet created in database
+        try:
+            from app.core.init_db import init_db
+            init_db()
+            staff_list = db.query(Staff).order_by(Staff.created_at.desc()).all()
+            return [staff_to_dict(s) for s in staff_list]
+        except Exception:
+            return []
 
 
+@router.post("", status_code=201, tags=["Staff"])
 @router.post("/", status_code=201, tags=["Staff"])
 def create_staff(body: StaffCreate, _=Depends(require_admin), db: Session = Depends(get_db)):
     """Register a new staff member (admin only)."""

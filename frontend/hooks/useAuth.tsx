@@ -43,6 +43,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
+
+    const handleExpired = () => {
+      setToken(null);
+      setUser(null);
+    };
+
+    window.addEventListener('buyam_auth_expired', handleExpired);
+    return () => window.removeEventListener('buyam_auth_expired', handleExpired);
   }, []);
 
   const persist = (data: TokenResponse) => {

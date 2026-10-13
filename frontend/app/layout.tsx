@@ -6,6 +6,7 @@ import CartDrawer from '@/components/cart/CartDrawer';
 import ChatAssistant from '@/components/chat/ChatAssistant';
 import { AuthProvider } from '@/hooks/useAuth';
 import { CartProvider } from '@/hooks/useCart';
+import { WishlistProvider } from '@/hooks/useWishlist';
 
 export const metadata: Metadata = {
   title: 'Buy Am | Buy it at Buy Am.',
@@ -22,11 +23,13 @@ export default function RootLayout({
       <body suppressHydrationWarning={true}>
         <AuthProvider>
           <CartProvider>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-            <CartDrawer />
-            <ChatAssistant />
+            <WishlistProvider>
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+              <CartDrawer />
+              <ChatAssistant />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

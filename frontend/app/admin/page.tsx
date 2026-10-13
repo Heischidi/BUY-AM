@@ -172,7 +172,7 @@ export default function AdminPage() {
     if (!token || user?.role !== 'admin') return;
     setFetching(true);
     try {
-      const [prods, cats, ords, custs, anly, staff] = await Promise.all([
+      const results = await Promise.allSettled([
         adminApi.products({ limit: 200 }, token) as Promise<AdminProduct[]>,
         categoriesApi.list() as Promise<Category[]>,
         adminApi.orders(token) as Promise<AdminOrder[]>,
@@ -180,12 +180,13 @@ export default function AdminPage() {
         adminApi.analytics(analyticsTimeframe, token) as Promise<AnalyticsData>,
         staffApi.list(token) as Promise<StaffMember[]>,
       ]);
-      setProducts(prods || []);
-      setCategories(cats || []);
-      setOrders(ords || []);
-      setCustomers(custs || []);
-      setAnalytics(anly || null);
-      setStaffList(staff || []);
+
+      if (results[0].status === 'fulfilled') setProducts((results[0].value as AdminProduct[]) || []);
+      if (results[1].status === 'fulfilled') setCategories((results[1].value as Category[]) || []);
+      if (results[2].status === 'fulfilled') setOrders((results[2].value as AdminOrder[]) || []);
+      if (results[3].status === 'fulfilled') setCustomers((results[3].value as AdminCustomer[]) || []);
+      if (results[4].status === 'fulfilled') setAnalytics((results[4].value as AnalyticsData) || null);
+      if (results[5].status === 'fulfilled') setStaffList((results[5].value as StaffMember[]) || []);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {

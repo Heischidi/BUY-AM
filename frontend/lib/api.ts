@@ -35,6 +35,14 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   });
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('buyam_token');
+        localStorage.removeItem('buyam_refresh');
+        localStorage.removeItem('buyam_user');
+        window.dispatchEvent(new Event('buyam_auth_expired'));
+      } catch {}
+    }
     let message = `HTTP ${response.status}`;
     try {
       const error = await response.json();
@@ -239,8 +247,8 @@ export const adminApi = {
 
 export const staffApi = {
   // Admin-only
-  list: (token: string) => request('/staff/', { token }),
-  create: (data: unknown, token: string) => request('/staff/', { method: 'POST', body: data, token }),
+  list: (token: string) => request('/staff', { token }),
+  create: (data: unknown, token: string) => request('/staff', { method: 'POST', body: data, token }),
   update: (id: number, data: unknown, token: string) => request(`/staff/${id}`, { method: 'PATCH', body: data, token }),
   delete: (id: number, token: string) => request(`/staff/${id}`, { method: 'DELETE', token }),
   allAttendance: (params: { staff_id?: number; date_filter?: string } = {}, token: string) => {

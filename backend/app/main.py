@@ -13,12 +13,19 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    redirect_slashes=False,
 )
 
 # CORS
+cors_origins = [o.strip() for o in settings.cors_origins if o.strip()]
+for default_origin in ["https://buy-am-tvbs.vercel.app", "https://buy-am-three.vercel.app", "http://localhost:3000"]:
+    if default_origin not in cors_origins:
+        cors_origins.append(default_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
